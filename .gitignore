@@ -1,0 +1,18 @@
+# Rust build output
+/target
+
+# Release artifacts produced by scripts/build-*.sh
+/dist
+*.tar.gz
+*.zip
+*.dmg
+
+# macOS bundle staging
+*.app
+
+# OS / editor cruft
+.DS_Store
+.claude/
+.idea/
+.vscode/
+*.swp

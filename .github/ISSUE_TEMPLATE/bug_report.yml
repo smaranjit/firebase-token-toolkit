@@ -1,0 +1,59 @@
+name: Bug report
+description: Something behaves incorrectly
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Please don't paste tokens, API keys, or service-account JSON.** Everything
+        this tool displays is a live credential. Redact before posting.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Load a service account
+        2. Open the … tab
+        3. …
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options: [Linux, macOS, Windows]
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Release tag, or commit SHA if built from source
+      placeholder: v0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: desktop
+    attributes:
+      label: Desktop environment (Linux only)
+      description: Helpful for window, file-picker, and clipboard issues
+      placeholder: GNOME 46 on Wayland
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Terminal output
+      description: Run the binary from a terminal and paste anything it printed.
+      render: shell

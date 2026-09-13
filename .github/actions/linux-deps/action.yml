@@ -1,0 +1,16 @@
+name: Install Linux build dependencies
+description: >
+  System headers eframe/glow, arboard, and the wayland/x11 winit backends link
+  against. No-op on non-Linux runners so callers can use it unconditionally.
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends \
+          libxkbcommon-dev libxkbcommon-x11-dev libwayland-dev libgl1-mesa-dev \
+          libx11-dev libxrandr-dev libxi-dev libxcursor-dev \
+          libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev pkg-config
