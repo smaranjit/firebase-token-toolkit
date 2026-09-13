@@ -1,0 +1,47 @@
+[package]
+name = "firebase-token-toolkit"
+version = "0.1.0"
+edition = "2021"
+# Determined empirically from the resolved dependency tree, not from eframe's own
+# declared 1.76 — transitive deps (home, image, time) have since moved past it.
+# CI enforces this exact version; see the msrv job in .github/workflows/ci.yml.
+rust-version = "1.88"
+authors = ["Smaranjit Maiti"]
+description = "A native desktop GUI for minting and exchanging Firebase auth tokens — custom tokens, ID tokens, custom claims, and App Check debug tokens."
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/smaranjit/firebase-token-toolkit"
+homepage = "https://github.com/smaranjit/firebase-token-toolkit"
+keywords = ["firebase", "auth", "jwt", "gui", "egui"]
+categories = ["development-tools", "gui", "authentication"]
+# NOT excluding /assets: main.rs include_bytes!s icon-256.png and build.rs reads
+# icon.ico, so dropping it here would break a packaged build.
+exclude = ["/dist", "/.github"]
+
+[dependencies]
+eframe = { version = "0.29", default-features = false, features = ["default_fonts", "glow", "persistence"] }
+egui = "0.29"
+egui_extras = { version = "0.29", features = ["all_loaders"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+jsonwebtoken = "9"
+base64 = "0.22"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+rfd = "0.15"
+anyhow = "1"
+thiserror = "1"
+arboard = "3"
+directories = "5"
+
+# Unconditional, not [target.'cfg(windows)'.build-dependencies]: cargo resolves
+# cfg() on build-dependencies against the HOST, so a Linux -> Windows cross-build
+# would silently drop it. build.rs gates on CARGO_CFG_TARGET_OS instead.
+[build-dependencies]
+winresource = "0.1"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+strip = true

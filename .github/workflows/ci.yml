@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  # Deliberately no global `RUSTFLAGS: -D warnings`: cargo applies RUSTFLAGS to
+  # dependencies too, so a warning in any of the ~470 transitive crates would
+  # fail the build. The clippy job denies warnings for our own code instead.
+
+jobs:
+  fmt:
+    name: rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: cargo fmt --all -- --check
+
+  clippy:
+    name: clippy
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: ./.github/actions/linux-deps
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy --all-targets -- -D warnings
+
+  msrv:
+    name: msrv (1.88)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      # Pinned to the rust-version declared in Cargo.toml. If this breaks after a
+      # dependency bump, raise the MSRV there deliberately rather than here.
+      - uses: dtolnay/rust-toolchain@1.88.0
+      - uses: ./.github/actions/linux-deps
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo check --all-targets
+
+  build:
+    name: build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, windows-latest, macos-14]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: ./.github/actions/linux-deps
+        if: runner.os == 'Linux'
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --release

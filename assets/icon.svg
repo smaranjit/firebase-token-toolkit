@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="Firebase Token Toolkit">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFC02E"/>
+      <stop offset="1" stop-color="#F06E00"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1024" height="1024" rx="224" ry="224" fill="url(#bg)"/>
+
+  <!-- Key: ring bow over a toothed shaft. Deliberately heavy strokes and wide
+       tooth gaps so the silhouette survives downscaling to 16px. -->
+  <g fill="none" stroke="#FFFFFF" stroke-width="116">
+    <circle cx="512" cy="366" r="162"/>
+  </g>
+  <g fill="#FFFFFF">
+    <rect x="454" y="470" width="116" height="404" rx="26"/>
+    <rect x="570" y="576" width="150" height="116" rx="26"/>
+    <rect x="570" y="758" width="106" height="116" rx="26"/>
+  </g>
+</svg>
