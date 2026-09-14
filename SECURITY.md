@@ -88,6 +88,10 @@ click it. Nothing is sent with it.
   run locally — but if you are signing with a key that matters, it is worth
   knowing. The alternative backend, `aws_lc_rs`, is constant-time but needs
   cmake and nasm, which breaks the cross-compiled Windows build.
+- **The Windows build links the C runtime statically.** That is what lets the
+  executable start on a machine without the Visual C++ Redistributable, but it
+  means Microsoft's runtime security fixes reach you only when this project
+  rebuilds and publishes a new release, rather than through Windows Update.
 - **Prefer a non-production service account.** Nothing here requires production
   credentials, and a development project limits the blast radius of a mistake.
 

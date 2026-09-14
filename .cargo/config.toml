@@ -1,0 +1,16 @@
+# Statically link the MSVC C runtime into the Windows executable.
+#
+# Without this the binary imports VCRUNTIME140.dll, which is not part of a clean
+# Windows install — it arrives with the Visual C++ Redistributable — so the app
+# fails to start with "VCRUNTIME140.dll was not found". CI never caught it
+# because GitHub's Windows runners have the redistributable pre-installed.
+#
+# This lives here rather than in a build script so it applies to every build of
+# the target: the CI job, scripts/build-windows.ps1, and the cargo-xwin
+# cross-build alike.
+#
+# Only release builds are distributed, which matters: the *debug* CRT is not
+# redistributable, while the release CRT is. See SECURITY.md for the trade-off
+# this makes on runtime security updates.
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]

@@ -32,6 +32,16 @@ echo "==> cross-building ${NAME} v${VERSION} for ${TARGET}"
 mkdir -p dist
 cargo xwin build --release --target "$TARGET" 2>&1 | tee "$LOG"
 
+# Same guard as build-windows.ps1: catch a dynamically linked CRT here rather
+# than on a user's machine.
+echo "==> checking the CRT is statically linked"
+if grep -aoE 'VCRUNTIME[0-9]+\.dll' "target/${TARGET}/release/${NAME}.exe" | head -1 | grep -q .; then
+  echo "error: the .exe imports VCRUNTIME - the CRT is not statically linked." >&2
+  echo "  check the rustflags in .cargo/config.toml" >&2
+  exit 1
+fi
+echo "    no VCRUNTIME import; the runtime is baked in"
+
 echo "==> staging"
 rm -rf "dist/stage-windows"
 mkdir -p "$STAGE"
