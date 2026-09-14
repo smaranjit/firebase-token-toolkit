@@ -17,6 +17,11 @@ virtual machines and remote desktop sessions, which often expose only a software
 OpenGL 1.1 driver. If neither backend works you get an error dialog rather than a
 window; enabling 3D acceleration for the VM usually fixes it.
 
+Where no GPU is available at all — a QEMU/KVM Windows guest with the display-only
+virtio GPU driver, for instance — it falls back further to a software adapter
+(WARP on Windows, lavapipe on Linux). That renders on the CPU and is slow, but
+the window opens.
+
 **Linux** (x86_64, glibc 2.35+ — Ubuntu 22.04 and newer):
 
 ```bash
@@ -63,7 +68,7 @@ The status indicator on the right turns green once the service account is loaded
 
 ## Build from source
 
-Requires Rust 1.88 or newer.
+Requires Rust 1.90 or newer.
 
 ```bash
 git clone https://github.com/smaranjit/firebase-token-toolkit

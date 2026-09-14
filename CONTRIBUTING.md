@@ -4,7 +4,7 @@ Thanks for taking a look. Issues and pull requests are both welcome.
 
 ## Getting set up
 
-Requires Rust 1.88 or newer (the MSRV is declared in `Cargo.toml` and enforced in CI).
+Requires Rust 1.90 or newer (the MSRV is declared in `Cargo.toml` and enforced in CI).
 
 ```bash
 git clone https://github.com/smaranjit/firebase-token-toolkit
