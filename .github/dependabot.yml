@@ -14,3 +14,9 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+    ignore:
+      # The msrv job pins this tag to the declared rust-version on purpose; it is
+      # not a dependency to keep current. Bumping it would quietly turn the MSRV
+      # check into a latest-stable check that always passes. Raise the MSRV in
+      # Cargo.toml and this pin together, deliberately.
+      - dependency-name: "dtolnay/rust-toolchain"
