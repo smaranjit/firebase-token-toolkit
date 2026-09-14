@@ -2,6 +2,13 @@
 
 use eframe::egui;
 
+const AUTHOR: &str = "Smaranjit Maiti";
+
+/// Hardcoded rather than derived from the owner segment of
+/// `CARGO_PKG_REPOSITORY`: the repository could move to an organisation without
+/// the author's profile changing, and the two are not the same thing.
+const AUTHOR_URL: &str = "https://github.com/smaranjit";
+
 /// Names credited in the About dialog.
 ///
 /// Sourced from the `CONTRIBUTORS` file at the repository root so that adding
@@ -57,7 +64,7 @@ pub fn window(ctx: &egui::Context, open: &mut bool) {
             ui.add_space(6.0);
 
             ui.strong("Author");
-            ui.label("Smaranjit Maiti");
+            ui.hyperlink_to(AUTHOR, AUTHOR_URL);
 
             let names = contributors();
             if !names.is_empty() {
