@@ -26,7 +26,13 @@ tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-jsonwebtoken = "9"
+# The rust_crypto feature is required, not optional: jsonwebtoken 11's default
+# feature set selects no crypto provider, and without one `encode` panics at
+# runtime ("Could not automatically determine the process-level CryptoProvider").
+# Key parsing still succeeds, so the failure only shows up when actually signing.
+# rust_crypto is pure Rust; aws_lc_rs is the alternative but needs cmake/nasm,
+# which would complicate the Windows build and the cargo-xwin cross-build.
+jsonwebtoken = { version = "11", features = ["rust_crypto"] }
 base64 = "0.23"
 percent-encoding = "2"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
@@ -37,8 +43,21 @@ arboard = "3"
 # Unconditional, not [target.'cfg(windows)'.build-dependencies]: cargo resolves
 # cfg() on build-dependencies against the HOST, so a Linux -> Windows cross-build
 # would silently drop it. build.rs gates on CARGO_CFG_TARGET_OS instead.
+[dev-dependencies]
+# Used only to generate a throwaway RSA key inside the signing test, so no
+# private key needs to be committed to the repository.
+rsa = { version = "0.9", features = ["pem"] }
+rand = "0.8"
+
 [build-dependencies]
 winresource = "0.1"
+
+# RSA key generation is bignum-heavy and takes seconds when built unoptimized,
+# which would make `cargo test` needlessly slow and its runtime variable.
+[profile.dev.package.rsa]
+opt-level = 3
+[profile.dev.package.num-bigint-dig]
+opt-level = 3
 
 [profile.release]
 opt-level = 3
