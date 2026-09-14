@@ -53,5 +53,38 @@ hdiutil create -volname "$DISPLAY_NAME" -srcfolder "$STAGE" \
   -ov -format UDZO "$OUT"
 rm -rf "$STAGE"
 
+# Verify the artifact we are about to ship, rather than trusting that the steps
+# above did what they claimed. An unverifiable release artifact is how a bundle
+# with a broken signature reaches users.
+echo "==> verifying ${OUT}"
+MOUNT="$(mktemp -d)"
+hdiutil attach "$OUT" -nobrowse -readonly -mountpoint "$MOUNT" >/dev/null
+APP="${MOUNT}/${DISPLAY_NAME}.app"
+status=0
+
+if [ ! -d "$APP" ]; then
+  echo "error: ${DISPLAY_NAME}.app is missing from the dmg" >&2
+  status=1
+else
+  ARCHS="$(lipo -archs "${APP}/Contents/MacOS/${NAME}")"
+  case "$ARCHS" in
+    *x86_64*arm64* | *arm64*x86_64*) echo "    architectures: ${ARCHS}" ;;
+    *)
+      echo "error: expected a universal binary, got: ${ARCHS}" >&2
+      status=1
+      ;;
+  esac
+  if codesign --verify --deep --strict "$APP" 2>/dev/null; then
+    echo "    signature valid inside the mounted image"
+  else
+    echo "error: signature is invalid inside the dmg" >&2
+    status=1
+  fi
+fi
+
+hdiutil detach "$MOUNT" >/dev/null
+rmdir "$MOUNT" 2>/dev/null || true
+[ "$status" -eq 0 ] || exit 1
+
 echo "==> done"
 ls -lh "$OUT"
