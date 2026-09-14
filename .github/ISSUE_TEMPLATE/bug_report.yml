@@ -51,6 +51,20 @@ body:
       description: Helpful for window, file-picker, and clipboard issues
       placeholder: GNOME 46 on Wayland
 
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Where are you running it?
+      description: >
+        Virtual machines and remote desktop sessions often lack a usable
+        graphics driver, which is the usual cause of the app failing to open.
+      options:
+        - Directly on the machine
+        - Virtual machine
+        - Remote desktop / RDP
+    validations:
+      required: true
+
   - type: textarea
     id: logs
     attributes:
