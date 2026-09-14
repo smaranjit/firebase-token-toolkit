@@ -5,7 +5,7 @@ A native desktop GUI for the Firebase auth tokens you need during development an
 [![CI](https://github.com/smaranjit/firebase-token-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/smaranjit/firebase-token-toolkit/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-Built with [eframe / egui](https://github.com/emilk/egui) — pure Rust, single binary.
+Built with [eframe / egui](https://github.com/emilk/egui) as a single native binary.
 
 ## Install
 
