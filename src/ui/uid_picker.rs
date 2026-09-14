@@ -1,23 +1,19 @@
-use std::sync::Arc;
-
-use anyhow::Result;
 use eframe::egui;
 use tokio::runtime::Handle;
 
+use anyhow::Result;
+
 use crate::app::SharedState;
 use crate::async_task::{AsyncState, AsyncTask};
-use crate::firebase::oauth::{fetch_access_token, AccessToken};
-use crate::firebase::service_account::ServiceAccount;
 use crate::firebase::users::{
     list_users, lookup_by_email, lookup_by_phone, lookup_by_uid, FirebaseUser,
 };
-use crate::firebase::HttpClient;
 
 pub struct UidPickerState {
     pub query: String,
     pub users: Vec<FirebaseUser>,
-    pub list_task: AsyncTask<Result<(AccessToken, Vec<FirebaseUser>)>>,
-    pub lookup_task: AsyncTask<Result<(AccessToken, Option<FirebaseUser>)>>,
+    pub list_task: AsyncTask<Result<Vec<FirebaseUser>>>,
+    pub lookup_task: AsyncTask<Result<Option<FirebaseUser>>>,
     pub last_error: Option<String>,
 }
 
@@ -97,36 +93,33 @@ pub fn render(
         }
     });
 
-    // poll list task
-    if let AsyncState::JustCompleted(result) = state.list_task.poll() {
-        match result {
-            Ok((tok, users)) => {
-                state.users = users.clone();
-                cache_token(shared, tok.clone(), rt);
-                state.last_error = None;
-            }
-            Err(e) => state.last_error = Some(e.to_string()),
+    match state.list_task.poll() {
+        AsyncState::JustCompleted(Ok(users)) => {
+            state.users = users;
+            state.last_error = None;
         }
+        AsyncState::JustCompleted(Err(e)) => state.last_error = Some(e.to_string()),
+        AsyncState::Failed => {
+            state.last_error = Some("Loading users failed unexpectedly.".to_string())
+        }
+        AsyncState::Pending | AsyncState::Idle => {}
     }
 
-    if let AsyncState::JustCompleted(result) = state.lookup_task.poll() {
-        match result {
-            Ok((tok, Some(user))) => {
-                cache_token(shared, tok.clone(), rt);
-                let user = user.clone();
-                shared.selected_uid = Some(user.local_id.clone());
-                shared.selected_user_label = Some(user.label());
-                if !state.users.iter().any(|u| u.local_id == user.local_id) {
-                    state.users.insert(0, user);
-                }
-                state.last_error = None;
+    match state.lookup_task.poll() {
+        AsyncState::JustCompleted(Ok(Some(user))) => {
+            shared.selected_uid = Some(user.local_id.clone());
+            shared.selected_user_label = Some(user.label());
+            if !state.users.iter().any(|u| u.local_id == user.local_id) {
+                state.users.insert(0, user);
             }
-            Ok((tok, None)) => {
-                cache_token(shared, tok.clone(), rt);
-                state.last_error = Some("No user found for that query".to_string());
-            }
-            Err(e) => state.last_error = Some(e.to_string()),
+            state.last_error = None;
         }
+        AsyncState::JustCompleted(Ok(None)) => {
+            state.last_error = Some("No user found for that query".to_string())
+        }
+        AsyncState::JustCompleted(Err(e)) => state.last_error = Some(e.to_string()),
+        AsyncState::Failed => state.last_error = Some("Lookup failed unexpectedly.".to_string()),
+        AsyncState::Pending | AsyncState::Idle => {}
     }
 
     if let Some(err) = &state.last_error {
@@ -148,10 +141,14 @@ pub fn render(
         filtered.len()
     ));
 
+    // Every row is one small line plus one monospace uid line, so the height is
+    // uniform and show_rows can virtualize — without it a 5,000-user list lays
+    // out 5,000 widgets per frame.
+    let row_height = ui.text_style_height(&egui::TextStyle::Small) * 2.0;
     egui::ScrollArea::vertical()
         .auto_shrink([false, false])
-        .show(ui, |ui| {
-            for user in filtered {
+        .show_rows(ui, row_height, filtered.len(), |ui, range| {
+            for user in &filtered[range] {
                 let selected = shared.selected_uid.as_deref() == Some(user.local_id.as_str());
                 let label = user.label();
                 let resp = ui.selectable_label(
@@ -182,9 +179,8 @@ fn spawn_list(state: &mut UidPickerState, shared: &SharedState, rt: &Handle) {
     let cached = shared.access_token.clone();
 
     state.list_task.spawn(rt, async move {
-        let tok = ensure_token(&http, &sa, &cached).await?;
-        let users = list_users(&http, &project_id, &tok, 5000).await?;
-        Ok::<_, anyhow::Error>((tok, users))
+        let tok = crate::firebase::oauth::ensure_access_token(&http, &sa, &cached).await?;
+        list_users(&http, &project_id, &tok, 5000).await
     });
 }
 
@@ -203,39 +199,13 @@ fn spawn_lookup(state: &mut UidPickerState, shared: &SharedState, rt: &Handle) {
     let cached = shared.access_token.clone();
 
     state.lookup_task.spawn(rt, async move {
-        let tok = ensure_token(&http, &sa, &cached).await?;
-        let user = if q.starts_with('+') {
-            lookup_by_phone(&http, &project_id, &tok, &q).await?
+        let tok = crate::firebase::oauth::ensure_access_token(&http, &sa, &cached).await?;
+        if q.starts_with('+') {
+            lookup_by_phone(&http, &project_id, &tok, &q).await
         } else if q.contains('@') {
-            lookup_by_email(&http, &project_id, &tok, &q).await?
+            lookup_by_email(&http, &project_id, &tok, &q).await
         } else {
-            lookup_by_uid(&http, &project_id, &tok, &q).await?
-        };
-        Ok::<_, anyhow::Error>((tok, user))
-    });
-}
-
-async fn ensure_token(
-    http: &HttpClient,
-    sa: &Arc<ServiceAccount>,
-    cached: &Arc<tokio::sync::Mutex<Option<AccessToken>>>,
-) -> Result<AccessToken> {
-    {
-        let guard = cached.lock().await;
-        if let Some(tok) = guard.as_ref() {
-            if !tok.is_expired() {
-                return Ok(tok.clone());
-            }
+            lookup_by_uid(&http, &project_id, &tok, &q).await
         }
-    }
-    let fresh = fetch_access_token(http, sa).await?;
-    *cached.lock().await = Some(fresh.clone());
-    Ok(fresh)
-}
-
-fn cache_token(shared: &SharedState, tok: AccessToken, rt: &Handle) {
-    let cached = shared.access_token.clone();
-    rt.spawn(async move {
-        *cached.lock().await = Some(tok);
     });
 }

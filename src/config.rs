@@ -15,16 +15,6 @@ pub struct Profile {
     pub debug_token: String,
 }
 
-impl Profile {
-    fn is_empty_legacy(&self) -> bool {
-        self.service_account_path.is_empty()
-            && self.project_id.is_empty()
-            && self.api_key.is_empty()
-            && self.app_id.is_empty()
-            && self.debug_token.is_empty()
-    }
-}
-
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct PersistedConfig {
     #[serde(default)]
@@ -65,7 +55,6 @@ impl PersistedConfig {
             // Always insert at least one profile so .active() can never panic.
             // We don't special-case "empty legacy" — an empty Default profile
             // is also the correct first-launch state.
-            let _ = migrated.is_empty_legacy(); // suppress dead-code warning
             self.profiles.push(migrated);
             self.active_profile = 0;
         } else {

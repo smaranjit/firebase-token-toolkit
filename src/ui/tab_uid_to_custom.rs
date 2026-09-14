@@ -81,17 +81,20 @@ pub fn render(ui: &mut egui::Ui, shared: &mut SharedState, state: &mut TabState,
         }
     });
 
-    if let AsyncState::JustCompleted(result) = state.task.poll() {
-        match result {
-            Ok(t) => {
-                state.last_token = Some(t.clone());
-                state.last_error = None;
-            }
-            Err(e) => {
-                state.last_error = Some(e.to_string());
-                state.last_token = None;
-            }
+    match state.task.poll() {
+        AsyncState::JustCompleted(Ok(t)) => {
+            state.last_token = Some(t);
+            state.last_error = None;
         }
+        AsyncState::JustCompleted(Err(e)) => {
+            state.last_error = Some(e.to_string());
+            state.last_token = None;
+        }
+        AsyncState::Failed => {
+            state.last_error = Some("Token generation failed unexpectedly.".to_string());
+            state.last_token = None;
+        }
+        AsyncState::Pending | AsyncState::Idle => {}
     }
 
     if let Some(err) = &state.last_error {

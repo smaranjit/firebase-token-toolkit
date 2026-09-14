@@ -68,6 +68,12 @@ pub struct SharedState {
     pub selected_user_label: Option<String>,
     pub status_message: Option<(StatusKind, String)>,
     pub requested_profile_switch: Option<usize>,
+    /// In-flight service-account file picker. Async so the dialog's D-Bus round
+    /// trip does not block the render thread.
+    pub file_dialog: AsyncTask<Option<std::path::PathBuf>>,
+    /// The project ID last auto-filled from a service account, used to tell an
+    /// auto-filled value apart from one the user typed.
+    pub sa_autofilled_project_id: Option<String>,
 }
 
 #[derive(Copy, Clone)]
@@ -138,6 +144,8 @@ impl FirebaseToolApp {
             selected_user_label: None,
             status_message: None,
             requested_profile_switch: None,
+            file_dialog: AsyncTask::new(),
+            sa_autofilled_project_id: None,
         };
 
         Self {
@@ -172,6 +180,7 @@ impl FirebaseToolApp {
 
     fn ensure_repaint(&self, ctx: &egui::Context) {
         if self.access_token_task.is_pending()
+            || self.shared.file_dialog.is_pending()
             || self.picker.has_pending()
             || self.tab_uid_custom.has_pending()
             || self.tab_uid_id.has_pending()
@@ -198,7 +207,7 @@ impl eframe::App for FirebaseToolApp {
         }
 
         egui::TopBottomPanel::top("settings").show(ctx, |ui| {
-            settings_panel::render(ui, &mut self.shared);
+            settings_panel::render(ui, &mut self.shared, &self.rt);
         });
 
         egui::TopBottomPanel::top("tabs").show(ctx, |ui| {

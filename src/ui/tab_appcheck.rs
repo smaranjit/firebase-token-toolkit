@@ -70,17 +70,20 @@ pub fn render(ui: &mut egui::Ui, shared: &mut SharedState, state: &mut TabState,
         }
     });
 
-    if let AsyncState::JustCompleted(result) = state.task.poll() {
-        match result {
-            Ok(out) => {
-                state.last_output = Some(out.clone());
-                state.last_error = None;
-            }
-            Err(e) => {
-                state.last_error = Some(e.to_string());
-                state.last_output = None;
-            }
+    match state.task.poll() {
+        AsyncState::JustCompleted(Ok(out)) => {
+            state.last_output = Some(out);
+            state.last_error = None;
         }
+        AsyncState::JustCompleted(Err(e)) => {
+            state.last_error = Some(e.to_string());
+            state.last_output = None;
+        }
+        AsyncState::Failed => {
+            state.last_error = Some("The exchange failed unexpectedly.".to_string());
+            state.last_output = None;
+        }
+        AsyncState::Pending | AsyncState::Idle => {}
     }
 
     if let Some(err) = &state.last_error {

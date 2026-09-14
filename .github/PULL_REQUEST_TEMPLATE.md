@@ -6,6 +6,7 @@
 
 - [ ] `cargo fmt --all -- --check` passes
 - [ ] `cargo clippy --all-targets -- -D warnings` passes
+- [ ] `cargo test --all-targets` passes
 - [ ] `cargo build --release` succeeds
 - [ ] Tested manually against a Firebase project (a development one)
 - [ ] `CHANGELOG.md` updated under `[Unreleased]`, if user-facing

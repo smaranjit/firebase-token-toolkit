@@ -11,14 +11,24 @@ pub fn copy_to_clipboard(text: &str) -> Result<(), String> {
 
 pub fn token_block(ui: &mut egui::Ui, label: &str, token: &str) {
     ui.group(|ui| {
+        // The outcome is stashed in egui's temp store rather than rendered
+        // inside the `clicked()` branch: that branch is true for exactly one
+        // frame, so the failure message vanished before anyone could read it.
+        let status_id = ui.id().with(("copy-status", label));
         ui.horizontal(|ui| {
             ui.strong(label);
             if ui.button("Copy").clicked() {
-                if let Err(e) = copy_to_clipboard(token) {
-                    ui.colored_label(egui::Color32::LIGHT_RED, format!("copy failed: {e}"));
-                }
+                let status = match copy_to_clipboard(token) {
+                    Ok(()) => String::new(),
+                    Err(e) => format!("copy failed: {e}"),
+                };
+                ui.data_mut(|d| d.insert_temp(status_id, status));
             }
         });
+        let status: String = ui.data(|d| d.get_temp(status_id).unwrap_or_default());
+        if !status.is_empty() {
+            ui.colored_label(egui::Color32::LIGHT_RED, status);
+        }
         egui::ScrollArea::horizontal()
             .id_salt(format!("token-{label}"))
             .max_height(80.0)

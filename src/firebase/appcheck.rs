@@ -2,7 +2,8 @@ use anyhow::{anyhow, Context, Result};
 use serde::Deserialize;
 use serde_json::json;
 
-use super::HttpClient;
+use super::{error_message, HttpClient, PATH_SEGMENT};
+use percent_encoding::utf8_percent_encode;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct AppCheckResponse {
@@ -18,14 +19,19 @@ pub async fn exchange_debug_token(
     debug_token: &str,
     api_key: &str,
 ) -> Result<AppCheckResponse> {
+    // project_id and app_id are path segments, so they are percent-encoded
+    // individually rather than interpolated raw.
     let url = format!(
-        "https://firebaseappcheck.googleapis.com/v1beta/projects/{project_id}/apps/{app_id}:exchangeDebugToken?key={api_key}"
+        "https://firebaseappcheck.googleapis.com/v1beta/projects/{}/apps/{}:exchangeDebugToken",
+        utf8_percent_encode(project_id, PATH_SEGMENT),
+        utf8_percent_encode(app_id, PATH_SEGMENT),
     );
     let body = json!({ "debugToken": debug_token });
 
     let resp = http
         .0
         .post(&url)
+        .query(&[("key", api_key)])
         .json(&body)
         .send()
         .await
@@ -35,11 +41,7 @@ pub async fn exchange_debug_token(
     let text = resp.text().await.context("read response body")?;
 
     if !status.is_success() {
-        let msg = serde_json::from_str::<serde_json::Value>(&text)
-            .ok()
-            .and_then(|v| v.get("error").and_then(|e| e.get("message")).cloned())
-            .and_then(|v| v.as_str().map(String::from))
-            .unwrap_or_else(|| text.clone());
+        let msg = error_message(&text).unwrap_or_else(|| text.clone());
         return Err(anyhow!("API error ({}): {}", status.as_u16(), msg));
     }
 
