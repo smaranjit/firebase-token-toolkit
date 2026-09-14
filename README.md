@@ -11,6 +11,12 @@ Built with [eframe / egui](https://github.com/emilk/egui) as a single native bin
 
 Grab the latest build for your platform from the [releases page](https://github.com/smaranjit/firebase-token-toolkit/releases/latest).
 
+**Graphics:** the app renders with OpenGL and falls back to wgpu (Direct3D 12 on
+Windows, Vulkan elsewhere) when OpenGL is unavailable. That fallback matters in
+virtual machines and remote desktop sessions, which often expose only a software
+OpenGL 1.1 driver. If neither backend works you get an error dialog rather than a
+window; enabling 3D acceleration for the VM usually fixes it.
+
 **Linux** (x86_64, glibc 2.35+ — Ubuntu 22.04 and newer):
 
 ```bash

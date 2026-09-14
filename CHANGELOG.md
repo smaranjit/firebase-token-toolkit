@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2]
+
+### Fixed
+
+- **The app now opens in virtual machines and remote desktop sessions.** It was
+  built against OpenGL only, and those environments commonly expose just a
+  software OpenGL 1.1 driver, below the 2.0 `egui_glow` requires. Startup failed
+  with `egui_glow requires opengl 2.0+` and the process exited. wgpu is now
+  compiled in as a fallback and is used automatically when OpenGL is unavailable
+  — Direct3D 12 on Windows, Vulkan elsewhere.
+- **A startup failure is now visible.** Release builds link as a Windows GUI
+  subsystem application, so there is no console and anything written to stderr is
+  discarded; the app simply vanished. Fatal startup errors now open a message
+  dialog explaining what failed.
+
+### Changed
+
+- The binary is roughly 5 MB larger, the cost of compiling in the second
+  renderer.
+
+Documented the graphics requirement in the README, which had never stated one,
+and the bug report form now asks whether you are on a VM or remote desktop.
+
 ## [0.1.1]
 
 ### Fixed
@@ -100,6 +123,7 @@ There is deliberately no automatic migration for this: it is a one-time move aff
 a handful of pre-release users, and a path-sniffing fallback would be permanent
 complexity in exchange for saving a single command.
 
-[Unreleased]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/smaranjit/firebase-token-toolkit/releases/tag/v0.1.0
