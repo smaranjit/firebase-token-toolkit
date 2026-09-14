@@ -32,9 +32,7 @@ percent-encoding = "2"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 rfd = "0.15"
 anyhow = "1"
-thiserror = "1"
 arboard = "3"
-directories = "5"
 
 # Unconditional, not [target.'cfg(windows)'.build-dependencies]: cargo resolves
 # cfg() on build-dependencies against the HOST, so a Linux -> Windows cross-build
