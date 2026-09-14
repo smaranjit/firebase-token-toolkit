@@ -2,6 +2,19 @@
 
 use eframe::egui;
 
+/// URL of a documentation file as it stood at this build's release tag.
+macro_rules! tagged_doc_url {
+    ($file:literal) => {
+        concat!(
+            env!("CARGO_PKG_REPOSITORY"),
+            "/blob/v",
+            env!("CARGO_PKG_VERSION"),
+            "/",
+            $file
+        )
+    };
+}
+
 const AUTHOR: &str = "Smaranjit Maiti";
 
 /// Hardcoded rather than derived from the owner segment of
@@ -91,6 +104,19 @@ pub fn window(ctx: &egui::Context, open: &mut bool) {
                     "Report an issue",
                     concat!(env!("CARGO_PKG_REPOSITORY"), "/issues"),
                 );
+            });
+
+            // The changelog and security notes are no longer shipped in the
+            // download; these links replace them. Both point at this build's tag
+            // rather than main, so what you read describes the binary you are
+            // running. A build from an untagged commit will 404 here — that is
+            // the trade for released builds being accurate.
+            ui.add_space(4.0);
+            ui.horizontal(|ui| {
+                ui.weak("Docs");
+                ui.separator();
+                ui.hyperlink_to("Changelog", tagged_doc_url!("CHANGELOG.md"));
+                ui.hyperlink_to("Security notes", tagged_doc_url!("SECURITY.md"));
             });
         });
 }
