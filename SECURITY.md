@@ -75,6 +75,15 @@ network request you did not initiate.
   are fetched via `accounts:batchGet`. Keep that in mind before screenshotting.
 - **Custom claims are written to the user record**, not just to a token. Saving claims
   calls `accounts:update` and affects every future ID token that user receives.
+- **RS256 signing uses the RustCrypto backend.** `jsonwebtoken` is built with
+  its `rust_crypto` feature, which brings in the `rsa` crate. That crate carries
+  an unresolved timing-sidechannel advisory for RSA private-key operations
+  ([RUSTSEC-2023-0071](https://rustsec.org/advisories/RUSTSEC-2023-0071)).
+  Exploiting it requires precisely timing many signing operations, which is a
+  concern for a network-exposed signing service rather than a desktop tool you
+  run locally — but if you are signing with a key that matters, it is worth
+  knowing. The alternative backend, `aws_lc_rs`, is constant-time but needs
+  cmake and nasm, which breaks the cross-compiled Windows build.
 - **Prefer a non-production service account.** Nothing here requires production
   credentials, and a development project limits the blast radius of a mistake.
 
