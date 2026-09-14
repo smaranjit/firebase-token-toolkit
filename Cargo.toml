@@ -1,6 +1,6 @@
 [package]
 name = "firebase-token-toolkit"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 # Determined empirically from the resolved dependency tree, not from eframe's own
 # declared 1.76 — transitive deps (home, image, time) have since moved past it.

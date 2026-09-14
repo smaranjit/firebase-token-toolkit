@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1]
+
+### Fixed
+
+- **The Windows build now starts on a clean machine.** The 0.1.0 executable was
+  dynamically linked against the MSVC runtime, so it imported `VCRUNTIME140.dll`
+  and failed with "The code execution cannot proceed because VCRUNTIME140.dll was
+  not found" unless the user happened to have the Visual C++ Redistributable
+  installed. The CRT is now linked statically.
+
+  CI did not catch this because GitHub's Windows runners ship with the
+  redistributable, so the binary ran fine there and only broke for users. Both
+  Windows build scripts now fail if the executable imports `VCRUNTIME` at all.
+
+Linux and macOS artifacts are unaffected; only the Windows download changes.
+
 ## [0.1.0]
 
 First public release.
@@ -52,6 +68,14 @@ Relative to the pre-release `firebase-tool` builds:
   a task that dies without a result now surfaces an error rather than silently
   stopping the spinner.
 
+### Also in this release
+
+- An **About dialog**, reached from the footer, showing the version, author,
+  licence and links to the source, contributors and issues. The footer carries
+  the version so it can be quoted in a bug report.
+- `jsonwebtoken` upgraded to 11 with an explicit crypto provider selected.
+- Dropped the unused `directories` and `thiserror` dependencies.
+
 ### Notes for anyone upgrading from a pre-release build
 
 The application was renamed from `firebase-tool` to `firebase-token-toolkit`. Because
@@ -76,5 +100,6 @@ There is deliberately no automatic migration for this: it is a one-time move aff
 a handful of pre-release users, and a path-sniffing fallback would be permanent
 complexity in exchange for saving a single command.
 
-[Unreleased]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/smaranjit/firebase-token-toolkit/releases/tag/v0.1.0

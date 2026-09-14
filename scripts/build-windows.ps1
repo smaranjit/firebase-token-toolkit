@@ -21,6 +21,20 @@ Write-Host "==> building $Name v$Version for $Target"
 cargo build --release --target $Target
 if ($LASTEXITCODE -ne 0) { throw "cargo build failed" }
 
+# Verify the CRT is statically linked before packaging. A GitHub runner has the
+# Visual C++ Redistributable installed, so a dynamically linked binary runs fine
+# here and fails only on a user's clean machine — exactly how v0.1.0 shipped
+# broken. Checking the import by name is cheap and needs no VS dev environment.
+Write-Host "==> checking the CRT is statically linked"
+$ExePath = "target\$Target\release\$Name.exe"
+$Bytes = [System.IO.File]::ReadAllBytes($ExePath)
+$AsText = [System.Text.Encoding]::ASCII.GetString($Bytes)
+if ($AsText -match 'VCRUNTIME\d+\.dll') {
+    throw "$Name.exe imports $($Matches[0]) - the CRT is not statically linked. " +
+          "Check the rustflags in .cargo/config.toml."
+}
+Write-Host "    no VCRUNTIME import; the runtime is baked in"
+
 Write-Host "==> staging"
 if (Test-Path "dist\stage-windows") { Remove-Item -Recurse -Force "dist\stage-windows" }
 New-Item -ItemType Directory -Force -Path $Stage | Out-Null
