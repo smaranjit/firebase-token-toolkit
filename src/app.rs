@@ -241,6 +241,20 @@ impl eframe::App for FirebaseToolApp {
             });
         }
 
+        // Added before the side panel so the footer spans the full window width,
+        // and before the central panel, which claims whatever space is left.
+        egui::TopBottomPanel::bottom("about").show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                // Read from Cargo.toml at compile time: the version a user reports
+                // in an issue can never drift from the binary they are running.
+                ui.weak(concat!("v", env!("CARGO_PKG_VERSION")));
+                ui.separator();
+                ui.hyperlink_to("GitHub", env!("CARGO_PKG_REPOSITORY"));
+                ui.separator();
+                ui.weak("MIT · Smaranjit Maiti");
+            });
+        });
+
         if self.tab.needs_uid_picker() {
             egui::SidePanel::left("uid_picker")
                 .resizable(true)
