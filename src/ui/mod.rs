@@ -1,3 +1,4 @@
+pub mod about;
 pub mod result_view;
 pub mod settings_panel;
 pub mod tab_appcheck;
