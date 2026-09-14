@@ -1,6 +1,6 @@
 [package]
 name = "firebase-token-toolkit"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 # Determined empirically from the resolved dependency tree, not from any single
 # crate's declared minimum. eframe 0.33 itself claims 1.88, but ordered-float
