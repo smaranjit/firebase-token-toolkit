@@ -49,6 +49,50 @@ fn main() {
     }
 }
 
+/// Pick a wgpu adapter, accepting a software one rather than refusing to start.
+///
+/// egui-wgpu's default selection asks wgpu for an adapter with
+/// `force_fallback_adapter: false`, which yields nothing on a machine with no
+/// GPU — a QEMU guest with a display-only virtio GPU, for instance, where the
+/// app then failed with "no suitable adapter found". Enumerating ourselves lets
+/// us rank the adapters and fall back to a CPU one: WARP on Windows, lavapipe
+/// on Linux. Slow, but it draws a window.
+///
+/// Hardware is still strongly preferred; the CPU entry is only reached when
+/// nothing else supports the surface.
+fn select_adapter(
+    adapters: &[eframe::wgpu::Adapter],
+    surface: Option<&eframe::wgpu::Surface<'_>>,
+) -> Result<eframe::wgpu::Adapter, String> {
+    adapters
+        .iter()
+        .filter(|adapter| surface.is_none_or(|s| adapter.is_surface_supported(s)))
+        .min_by_key(|adapter| adapter_rank(adapter.get_info().device_type))
+        .cloned()
+        .ok_or_else(|| {
+            format!(
+                "none of the {} wgpu adapters found can draw to this window",
+                adapters.len()
+            )
+        })
+}
+
+/// Preference order for [`select_adapter`]; lower sorts first.
+///
+/// Split out so the ordering can be tested — a `wgpu::Adapter` cannot be
+/// constructed outside a real graphics stack, but the policy it encodes is the
+/// part worth pinning down.
+fn adapter_rank(device_type: eframe::wgpu::DeviceType) -> u8 {
+    use eframe::wgpu::DeviceType;
+    match device_type {
+        DeviceType::DiscreteGpu => 0,
+        DeviceType::IntegratedGpu => 1,
+        DeviceType::VirtualGpu => 2,
+        DeviceType::Cpu => 3,
+        DeviceType::Other => 4,
+    }
+}
+
 fn run(renderer: eframe::Renderer, handle: Handle) -> eframe::Result<()> {
     let mut viewport = eframe::egui::ViewportBuilder::default()
         .with_inner_size([1100.0, 720.0])
@@ -63,10 +107,16 @@ fn run(renderer: eframe::Renderer, handle: Handle) -> eframe::Result<()> {
         Err(err) => eprintln!("warning: could not load window icon: {err}"),
     }
 
+    let mut wgpu_options = eframe::egui_wgpu::WgpuConfiguration::default();
+    if let eframe::egui_wgpu::WgpuSetup::CreateNew(setup) = &mut wgpu_options.wgpu_setup {
+        setup.native_adapter_selector = Some(std::sync::Arc::new(select_adapter));
+    }
+
     let options = eframe::NativeOptions {
         viewport,
         persist_window: true,
         renderer,
+        wgpu_options,
         ..Default::default()
     };
 
@@ -112,4 +162,51 @@ fn report_fatal(err: &eframe::Error) {
         .set_title("Firebase Token Toolkit")
         .set_description(message)
         .show();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::adapter_rank;
+    use eframe::wgpu::DeviceType;
+
+    #[test]
+    fn hardware_adapters_outrank_software_ones() {
+        for faster in [
+            DeviceType::DiscreteGpu,
+            DeviceType::IntegratedGpu,
+            DeviceType::VirtualGpu,
+        ] {
+            assert!(
+                adapter_rank(faster) < adapter_rank(DeviceType::Cpu),
+                "{faster:?} should be preferred over a CPU adapter"
+            );
+        }
+    }
+
+    #[test]
+    fn a_cpu_adapter_is_still_acceptable() {
+        // The whole point of the selector: a software adapter must rank ahead of
+        // nothing at all, so a machine with no GPU still gets a window instead
+        // of "no suitable adapter found".
+        assert!(adapter_rank(DeviceType::Cpu) < adapter_rank(DeviceType::Other));
+    }
+
+    #[test]
+    fn the_order_is_total_and_distinct() {
+        let mut ranks: Vec<u8> = [
+            DeviceType::DiscreteGpu,
+            DeviceType::IntegratedGpu,
+            DeviceType::VirtualGpu,
+            DeviceType::Cpu,
+            DeviceType::Other,
+        ]
+        .into_iter()
+        .map(adapter_rank)
+        .collect();
+        let before = ranks.clone();
+        ranks.sort_unstable();
+        ranks.dedup();
+        assert_eq!(ranks.len(), 5, "every device type needs a distinct rank");
+        assert_eq!(before, ranks, "ranks should already be in preference order");
+    }
 }
