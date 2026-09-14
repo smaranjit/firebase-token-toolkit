@@ -10,7 +10,7 @@ use crate::firebase::oauth::AccessToken;
 use crate::firebase::service_account::ServiceAccount;
 use crate::firebase::HttpClient;
 use crate::ui::{
-    settings_panel, tab_appcheck, tab_custom_claims, tab_exchange, tab_uid_to_custom,
+    about, settings_panel, tab_appcheck, tab_custom_claims, tab_exchange, tab_uid_to_custom,
     tab_uid_to_id, uid_picker,
 };
 
@@ -119,6 +119,9 @@ pub struct FirebaseToolApp {
     pub tab_custom_claims: tab_custom_claims::TabState,
     pub tab_appcheck: tab_appcheck::TabState,
     pub access_token_task: AsyncTask<anyhow::Result<AccessToken>>,
+    /// Transient UI state — deliberately not persisted; the dialog should not
+    /// reopen itself on the next launch.
+    pub show_about: bool,
 }
 
 impl FirebaseToolApp {
@@ -159,6 +162,7 @@ impl FirebaseToolApp {
             tab_custom_claims: tab_custom_claims::TabState::default(),
             tab_appcheck: tab_appcheck::TabState::default(),
             access_token_task: AsyncTask::new(),
+            show_about: false,
         }
     }
 
@@ -244,16 +248,14 @@ impl eframe::App for FirebaseToolApp {
         // Added before the side panel so the footer spans the full window width,
         // and before the central panel, which claims whatever space is left.
         egui::TopBottomPanel::bottom("about").show(ctx, |ui| {
-            ui.horizontal(|ui| {
-                // Read from Cargo.toml at compile time: the version a user reports
-                // in an issue can never drift from the binary they are running.
-                ui.weak(concat!("v", env!("CARGO_PKG_VERSION")));
-                ui.separator();
-                ui.hyperlink_to("GitHub", env!("CARGO_PKG_REPOSITORY"));
-                ui.separator();
-                ui.weak("MIT · Smaranjit Maiti");
-            });
+            about::footer(ui, &mut self.show_about);
         });
+
+        // Window::open() needs its own &mut bool, which would conflict with the
+        // borrow of `self` inside the closure, so it round-trips via a local.
+        let mut show_about = self.show_about;
+        about::window(ctx, &mut show_about);
+        self.show_about = show_about;
 
         if self.tab.needs_uid_picker() {
             egui::SidePanel::left("uid_picker")
