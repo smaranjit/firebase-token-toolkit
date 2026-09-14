@@ -34,7 +34,7 @@ rfd = "0.15"
 anyhow = "1"
 thiserror = "1"
 arboard = "3"
-directories = "5"
+directories = "6"
 
 # Unconditional, not [target.'cfg(windows)'.build-dependencies]: cargo resolves
 # cfg() on build-dependencies against the HOST, so a Linux -> Windows cross-build
