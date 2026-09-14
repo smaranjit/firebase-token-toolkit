@@ -39,7 +39,16 @@ Write-Host "==> staging"
 if (Test-Path "dist\stage-windows") { Remove-Item -Recurse -Force "dist\stage-windows" }
 New-Item -ItemType Directory -Force -Path $Stage | Out-Null
 Copy-Item "target\$Target\release\$Name.exe" $Stage
-Copy-Item README.md, LICENSE, CHANGELOG.md, SECURITY.md $Stage
+# Read the document list out of common.sh rather than restating it. This script
+# cannot source a shell file, and the copy that used to live here drifted the
+# moment common.sh changed — v0.1.4 shipped a Windows archive still containing
+# files the other two platforms had dropped.
+$DocsLine = Select-String -Path scripts/common.sh -Pattern '^DOCS=\((.*)\)' | Select-Object -First 1
+if (-not $DocsLine) { throw "could not find the DOCS list in scripts/common.sh" }
+$Docs = $DocsLine.Matches.Groups[1].Value -split '\s+' | Where-Object { $_ }
+if (-not $Docs) { throw "the DOCS list in scripts/common.sh parsed as empty" }
+Write-Host "    shipping docs: $($Docs -join ', ')"
+Copy-Item $Docs $Stage
 
 Write-Host "==> packing $Out"
 if (Test-Path $Out) { Remove-Item -Force $Out }
