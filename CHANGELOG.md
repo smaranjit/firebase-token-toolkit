@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4]
+
+### Changed
+
+- The download no longer contains `CHANGELOG.md` or `SECURITY.md`. Both are now
+  reachable from the About dialog, which links the version tag this build came
+  from, so what you read matches the binary you are running rather than a copy
+  frozen when the archive was made.
+- `README.md` and `LICENSE` still ship. The README carries the macOS Gatekeeper
+  and Windows SmartScreen steps, which are needed precisely when the app will not
+  launch and so cannot live behind a link inside it; the licence ships because
+  MIT requires the notice to be included in all copies.
+
+### Fixed
+
+- README links to `CONTRIBUTING.md`, `SECURITY.md` and `scripts/` now point at
+  GitHub rather than being relative, so they resolve from inside a downloaded
+  archive instead of pointing at files that are not there.
+
 ## [0.1.3]
 
 ### Fixed
@@ -143,7 +162,8 @@ There is deliberately no automatic migration for this: it is a one-time move aff
 a handful of pre-release users, and a path-sniffing fallback would be permanent
 complexity in exchange for saving a single command.
 
-[Unreleased]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.0...v0.1.1

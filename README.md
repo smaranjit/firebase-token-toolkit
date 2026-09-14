@@ -75,17 +75,17 @@ sudo apt install -y \
 
 **Windows** needs the MSVC toolchain (Visual Studio Build Tools). **macOS** needs Xcode command line tools. Neither needs anything else — TLS is `rustls`, so there is no OpenSSL system dependency.
 
-To reproduce the packaged release artifacts, see [`scripts/`](./scripts) and [CONTRIBUTING.md](./CONTRIBUTING.md#building-release-artifacts).
+To reproduce the packaged release artifacts, see [`scripts/`](https://github.com/smaranjit/firebase-token-toolkit/tree/main/scripts) and [CONTRIBUTING.md](https://github.com/smaranjit/firebase-token-toolkit/blob/main/CONTRIBUTING.md#building-release-artifacts).
 
 ## Security
 
-This tool handles Firebase **service-account private keys** and mints signed tokens with them. Please read [SECURITY.md](./SECURITY.md) before using it against anything that matters — it covers what is written to disk, what stays in memory, and how to report a vulnerability.
+This tool handles Firebase **service-account private keys** and mints signed tokens with them. Please read [SECURITY.md](https://github.com/smaranjit/firebase-token-toolkit/blob/main/SECURITY.md) before using it against anything that matters — it covers what is written to disk, what stays in memory, and how to report a vulnerability.
 
 The short version: the service account is read from the path you pick and never copied; OAuth access tokens live in memory only; API keys and App IDs are written to disk only when you tick **Remember secrets**.
 
 ## Contributing
 
-Issues and pull requests are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md).
+Issues and pull requests are welcome — see [CONTRIBUTING.md](https://github.com/smaranjit/firebase-token-toolkit/blob/main/CONTRIBUTING.md).
 
 ## License
 

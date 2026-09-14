@@ -19,4 +19,11 @@ require() {
 }
 
 # Files shipped alongside the binary in every archive.
-DOCS=(README.md LICENSE CHANGELOG.md SECURITY.md)
+#
+# README carries the macOS Gatekeeper and Windows SmartScreen steps, which are
+# needed exactly when the app will not launch — so they cannot live behind a
+# link inside the app. LICENSE ships because MIT requires the notice to be
+# included in all copies. The changelog and security notes are reachable from
+# the About dialog instead, where a link is always current and a shipped copy
+# would be frozen at build time.
+DOCS=(README.md LICENSE)
