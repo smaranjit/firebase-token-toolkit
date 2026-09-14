@@ -62,6 +62,10 @@ All requests go to Google endpoints over TLS (`rustls` — no OpenSSL):
 There is **no telemetry, analytics, or update check**. The application makes no
 network request you did not initiate.
 
+The one thing that leaves the app besides the calls above is the **GitHub** link
+in the footer, which hands the repository URL to your system browser when you
+click it. Nothing is sent with it.
+
 ## Things worth knowing
 
 - **The OAuth scopes are broad.** Access tokens are requested with
