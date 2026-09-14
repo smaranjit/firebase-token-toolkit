@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3]
+
+### Fixed
+
+- **The app now opens on machines with no GPU at all**, such as a QEMU/KVM
+  Windows guest using the display-only virtio GPU driver. v0.1.2 fell back from
+  OpenGL to wgpu but then failed with "no suitable adapter found", because
+  egui-wgpu asks wgpu for an adapter with `force_fallback_adapter: false` and
+  there was no hardware one. The app now enumerates adapters itself and accepts
+  a software adapter as a last resort — WARP on Windows, lavapipe on Linux.
+  Hardware is still strongly preferred.
+
+### Changed
+
+- Upgraded egui, eframe and egui_extras from 0.29 to 0.33, which is what exposes
+  the adapter selector. The minimum supported Rust version is unchanged at 1.88;
+  0.33 is the newest release that still builds on it.
+
 ## [0.1.2]
 
 ### Fixed
@@ -123,7 +141,8 @@ There is deliberately no automatic migration for this: it is a one-time move aff
 a handful of pre-release users, and a path-sniffing fallback would be permanent
 complexity in exchange for saving a single command.
 
-[Unreleased]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/smaranjit/firebase-token-toolkit/releases/tag/v0.1.0
