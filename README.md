@@ -68,7 +68,7 @@ The status indicator on the right turns green once the service account is loaded
 
 ## Build from source
 
-Requires Rust 1.88 or newer.
+Requires Rust 1.90 or newer.
 
 ```bash
 git clone https://github.com/smaranjit/firebase-token-toolkit

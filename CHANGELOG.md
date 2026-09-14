@@ -22,8 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Upgraded egui, eframe and egui_extras from 0.29 to 0.33, which is what exposes
-  the adapter selector. The minimum supported Rust version is unchanged at 1.88;
-  0.33 is the newest release that still builds on it.
+  the adapter selector. 0.33 is the newest release that does not require a much
+  newer toolchain — 0.34 onwards needs Rust 1.92, and 0.36 needs 1.95.
+- The minimum supported Rust version rises from 1.88 to 1.90, required by
+  `ordered-float` in the upgraded dependency tree.
 
 ## [0.1.2]
 

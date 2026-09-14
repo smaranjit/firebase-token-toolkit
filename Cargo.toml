@@ -2,10 +2,12 @@
 name = "firebase-token-toolkit"
 version = "0.1.3"
 edition = "2021"
-# Determined empirically from the resolved dependency tree, not from eframe's own
-# declared 1.76 — transitive deps (home, image, time) have since moved past it.
+# Determined empirically from the resolved dependency tree, not from any single
+# crate's declared minimum. eframe 0.33 itself claims 1.88, but ordered-float
+# (pulled in transitively) requires 1.90, and the tree's floor is what actually
+# governs.
 # CI enforces this exact version; see the msrv job in .github/workflows/ci.yml.
-rust-version = "1.88"
+rust-version = "1.90"
 authors = ["Smaranjit Maiti"]
 description = "A native desktop GUI for minting and exchanging Firebase auth tokens — custom tokens, ID tokens, custom claims, and App Check debug tokens."
 license = "MIT"
