@@ -22,15 +22,17 @@ fn parse_contributors(raw: &str) -> Vec<&str> {
         .collect()
 }
 
-/// Bottom strip: version, repository link, and the About toggle.
+/// Bottom strip: version and the About toggle.
+///
+/// Deliberately minimal. A repository link lived here too, but it duplicated
+/// About's Source link while rendering as the brightest element in what should
+/// be quiet chrome.
 ///
 /// The version comes from Cargo.toml via `env!`, so the number a user quotes in
 /// a bug report cannot drift from the binary they are running.
 pub fn footer(ui: &mut egui::Ui, show_about: &mut bool) {
     ui.horizontal(|ui| {
         ui.weak(concat!("v", env!("CARGO_PKG_VERSION")));
-        ui.separator();
-        ui.hyperlink_to("GitHub", env!("CARGO_PKG_REPOSITORY"));
         ui.separator();
         if ui.small_button("About").clicked() {
             *show_about = !*show_about;
