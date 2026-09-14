@@ -176,6 +176,11 @@ fn profile_row(ui: &mut egui::Ui, shared: &mut SharedState) {
                 });
             }
             let new_idx = idx.min(shared.config.profiles.len() - 1);
+            // Apply the index immediately as well as requesting the switch:
+            // requested_profile_switch is not consumed until the top of the next
+            // frame, but render() calls config.active() again further down *this*
+            // one, which would index past the end of the shortened Vec.
+            shared.config.active_profile = new_idx;
             shared.requested_profile_switch = Some(new_idx);
         }
     });

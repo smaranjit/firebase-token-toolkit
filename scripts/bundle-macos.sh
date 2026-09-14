@@ -61,7 +61,11 @@ PLIST
 # This is *not* notarization — Gatekeeper still warns on first launch.
 if command -v codesign >/dev/null; then
   codesign --force --deep --sign - "$APP"
-  codesign --verify --deep --strict "$APP" && echo "==> ad-hoc signature verified"
+  # Deliberately NOT `codesign --verify ... && echo`: under `set -e` a failing
+  # left operand of && does not abort, so a broken signature would sail through
+  # into the published .dmg.
+  codesign --verify --deep --strict "$APP"
+  echo "==> ad-hoc signature verified"
 else
   echo "WARNING: codesign unavailable; bundle is unsigned and will not launch on Apple Silicon" >&2
 fi

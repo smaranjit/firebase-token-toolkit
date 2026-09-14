@@ -37,8 +37,8 @@ will appear empty on first launch unless you move the config directory:
 mv ~/.local/share/firebase-tool ~/.local/share/firebase-token-toolkit
 
 # macOS
-mv "~/Library/Application Support/firebase-tool" \
-   "~/Library/Application Support/firebase-token-toolkit"
+mv ~/"Library/Application Support/firebase-tool" \
+   ~/"Library/Application Support/firebase-token-toolkit"
 ```
 
 ```powershell
