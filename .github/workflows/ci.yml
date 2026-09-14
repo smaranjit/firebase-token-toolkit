@@ -17,7 +17,7 @@ jobs:
     name: rustfmt
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
@@ -27,7 +27,7 @@ jobs:
     name: clippy
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
@@ -39,7 +39,7 @@ jobs:
     name: msrv (1.88)
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # Pinned to the rust-version declared in Cargo.toml. If this breaks after a
       # dependency bump, raise the MSRV there deliberately rather than here.
       - uses: dtolnay/rust-toolchain@1.88.0
@@ -55,7 +55,7 @@ jobs:
       matrix:
         os: [ubuntu-22.04, windows-latest, macos-14]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: ./.github/actions/linux-deps
         if: runner.os == 'Linux'
@@ -70,7 +70,7 @@ jobs:
       matrix:
         os: [ubuntu-22.04, windows-latest, macos-14]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: ./.github/actions/linux-deps
         if: runner.os == 'Linux'
