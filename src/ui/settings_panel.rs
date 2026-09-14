@@ -1,12 +1,14 @@
 use std::sync::Arc;
 
 use eframe::egui;
+use tokio::runtime::Handle;
 
 use crate::app::SharedState;
+use crate::async_task::AsyncState;
 use crate::config::Profile;
 use crate::firebase::service_account::ServiceAccount;
 
-pub fn render(ui: &mut egui::Ui, shared: &mut SharedState) {
+pub fn render(ui: &mut egui::Ui, shared: &mut SharedState, rt: &Handle) {
     ui.add_space(4.0);
 
     profile_row(ui, shared);
@@ -26,11 +28,27 @@ pub fn render(ui: &mut egui::Ui, shared: &mut SharedState) {
                 .selectable(true),
         );
 
-        if ui.button("Browse…").clicked() {
-            if let Some(path) = rfd::FileDialog::new()
+        // Fire the picker as a background task. rfd's synchronous pick_file()
+        // blocks on a D-Bus round trip to the XDG portal, which would freeze the
+        // whole frame — spinners, in-flight requests and all — until the user
+        // chose a file.
+        if ui
+            .add_enabled(
+                !shared.file_dialog.is_pending(),
+                egui::Button::new("Browse…"),
+            )
+            .clicked()
+        {
+            let dialog = rfd::AsyncFileDialog::new()
                 .add_filter("JSON", &["json"])
-                .pick_file()
-            {
+                .set_title("Select a service account JSON");
+            shared.file_dialog.spawn(rt, async move {
+                dialog.pick_file().await.map(|h| h.path().to_path_buf())
+            });
+        }
+
+        match shared.file_dialog.poll() {
+            AsyncState::JustCompleted(Some(path)) => {
                 let path_str = path.display().to_string();
                 match ServiceAccount::from_path(&path) {
                     Ok(sa) => {
@@ -38,6 +56,7 @@ pub fn render(ui: &mut egui::Ui, shared: &mut SharedState) {
                             && !sa.project_id.is_empty()
                         {
                             shared.config.active_mut().project_id = sa.project_id.clone();
+                            shared.sa_autofilled_project_id = Some(sa.project_id.clone());
                         }
                         shared.service_account = Some(Arc::new(sa));
                         shared.config.active_mut().service_account_path = path_str;
@@ -49,12 +68,22 @@ pub fn render(ui: &mut egui::Ui, shared: &mut SharedState) {
                     }
                 }
             }
+            // User cancelled the dialog.
+            AsyncState::JustCompleted(None) => {}
+            AsyncState::Failed => shared.set_error("The file picker closed unexpectedly"),
+            AsyncState::Pending | AsyncState::Idle => {}
         }
 
         if shared.service_account.is_some() && ui.button("Clear").clicked() {
             shared.service_account = None;
             shared.config.active_mut().service_account_path.clear();
-            shared.config.active_mut().project_id.clear();
+            // Only discard the project ID if it is still the value we auto-filled
+            // from the key file. A project ID the user typed by hand survives —
+            // clearing it silently broke the UID picker with no visible cause.
+            let autofilled = shared.sa_autofilled_project_id.take();
+            if autofilled.as_deref() == Some(shared.config.active().project_id.as_str()) {
+                shared.config.active_mut().project_id.clear();
+            }
             shared.selected_uid = None;
             shared.selected_user_label = None;
         }

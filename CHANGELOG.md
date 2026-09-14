@@ -26,6 +26,32 @@ First public release.
 - Opt-in persistence of API key and App ID; opt-out is the default.
 - Linux, Windows, and macOS release builds.
 
+### Fixed
+
+Relative to the pre-release `firebase-tool` builds:
+
+- Deleting the active profile no longer panics. The index was left pointing past
+  the end of the profile list for the remainder of the frame.
+- The Custom Claims editor is cleared when the selected user changes. Previously
+  the editor kept the previously loaded user's claims, and Save would write them
+  onto the newly selected user's record.
+- Custom claims that are not a JSON object (an array, string or number) are now
+  rejected before signing instead of producing a token that fails opaquely at
+  `signInWithCustomToken`.
+- The service-account file picker runs asynchronously; it previously blocked the
+  UI thread for as long as the dialog was open.
+- Pagination cursors and project/app IDs are percent-encoded into request URLs.
+  A UID containing `&`, `+` or `/` could previously corrupt the request.
+- Truncated token previews slice on character boundaries, fixing a panic on
+  multi-byte input.
+- A failed clipboard copy now stays on screen instead of appearing for a single
+  frame.
+- Clearing the service account no longer discards a project ID that was typed by
+  hand; only an auto-filled value is removed.
+- Background tasks are cancelled when superseded or when switching profiles, and
+  a task that dies without a result now surfaces an error rather than silently
+  stopping the spinner.
+
 ### Notes for anyone upgrading from a pre-release build
 
 The application was renamed from `firebase-tool` to `firebase-token-toolkit`. Because

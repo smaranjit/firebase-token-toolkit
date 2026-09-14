@@ -2,7 +2,7 @@ use anyhow::{anyhow, Context, Result};
 use serde::Deserialize;
 use serde_json::json;
 
-use super::HttpClient;
+use super::{error_message, HttpClient};
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct IdTokenResponse {
@@ -19,13 +19,12 @@ pub async fn sign_in_with_custom_token(
     api_key: &str,
     custom_token: &str,
 ) -> Result<IdTokenResponse> {
-    let url = format!(
-        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key={api_key}"
-    );
+    let url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken";
     let body = json!({ "token": custom_token, "returnSecureToken": true });
     let resp = http
         .0
-        .post(&url)
+        .post(url)
+        .query(&[("key", api_key)])
         .json(&body)
         .send()
         .await
@@ -35,11 +34,7 @@ pub async fn sign_in_with_custom_token(
     let text = resp.text().await.context("read response body")?;
 
     if !status.is_success() {
-        let msg = serde_json::from_str::<serde_json::Value>(&text)
-            .ok()
-            .and_then(|v| v.get("error").and_then(|e| e.get("message")).cloned())
-            .and_then(|v| v.as_str().map(String::from))
-            .unwrap_or_else(|| text.clone());
+        let msg = error_message(&text).unwrap_or_else(|| text.clone());
         return Err(anyhow!("API error ({}): {}", status.as_u16(), msg));
     }
 

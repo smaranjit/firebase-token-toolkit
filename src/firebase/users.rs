@@ -2,8 +2,10 @@ use anyhow::{anyhow, Context, Result};
 use serde::Deserialize;
 use serde_json::json;
 
+use percent_encoding::utf8_percent_encode;
+
 use super::oauth::AccessToken;
-use super::HttpClient;
+use super::{error_message, HttpClient, PATH_SEGMENT};
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct FirebaseUser {
@@ -17,6 +19,11 @@ pub struct FirebaseUser {
     pub display_name: Option<String>,
     #[serde(rename = "customAttributes", default)]
     pub custom_attributes: Option<String>,
+
+    /// Lowercased haystack for `matches`, built once by `index()` after
+    /// deserialization. Not part of the API response.
+    #[serde(skip)]
+    search_key: String,
 }
 
 impl FirebaseUser {
@@ -32,25 +39,31 @@ impl FirebaseUser {
         }
     }
 
-    pub fn matches(&self, query: &str) -> bool {
-        let q = query.to_lowercase();
-        let in_email = self
-            .email
-            .as_deref()
-            .map(|e| e.to_lowercase().contains(&q))
-            .unwrap_or(false);
-        let in_phone = self
-            .phone_number
-            .as_deref()
-            .map(|p| p.to_lowercase().contains(&q))
-            .unwrap_or(false);
-        let in_name = self
-            .display_name
-            .as_deref()
-            .map(|n| n.to_lowercase().contains(&q))
-            .unwrap_or(false);
-        let in_uid = self.local_id.to_lowercase().contains(&q);
-        in_email || in_phone || in_name || in_uid
+    /// Build the lowercased search haystack. Must be called once after
+    /// deserialization; every parse site in this module does so.
+    fn index(&mut self) {
+        let mut key = String::new();
+        let parts = [
+            self.email.as_deref(),
+            self.phone_number.as_deref(),
+            self.display_name.as_deref(),
+            Some(self.local_id.as_str()),
+        ];
+        for part in parts.into_iter().flatten() {
+            key.push_str(&part.to_lowercase());
+            // Separator prevents a query from matching across two fields.
+            key.push('\n');
+        }
+        self.search_key = key;
+    }
+
+    /// `query` must already be lowercased by the caller.
+    ///
+    /// The haystack is precomputed because this runs once per user per frame:
+    /// lowercasing four fields inline meant ~25k allocations per repaint with a
+    /// full 5,000-user list loaded.
+    pub fn matches(&self, query_lowercase: &str) -> bool {
+        self.search_key.contains(query_lowercase)
     }
 }
 
@@ -77,18 +90,24 @@ pub async fn list_users(
     let mut all: Vec<FirebaseUser> = Vec::new();
     let mut next: Option<String> = None;
 
+    let url = format!(
+        "https://identitytoolkit.googleapis.com/v1/projects/{}/accounts:batchGet",
+        utf8_percent_encode(project_id, PATH_SEGMENT)
+    );
+
     loop {
-        let mut url = format!(
-            "https://identitytoolkit.googleapis.com/v1/projects/{project_id}/accounts:batchGet?maxResults=1000"
-        );
+        // nextPageToken is derived from a localId and may contain +, /, = or &,
+        // so it goes through query() to be percent-encoded rather than being
+        // concatenated into the URL raw.
+        let mut query: Vec<(&str, &str)> = vec![("maxResults", "1000")];
         if let Some(tok) = &next {
-            url.push_str("&nextPageToken=");
-            url.push_str(tok);
+            query.push(("nextPageToken", tok));
         }
 
         let resp = http
             .0
             .get(&url)
+            .query(&query)
             .bearer_auth(&access_token.token)
             .send()
             .await
@@ -102,7 +121,10 @@ pub async fn list_users(
             return Err(anyhow!("API error ({}): {}", status.as_u16(), msg));
         }
 
-        let parsed: BatchGetResp = serde_json::from_str(&text).context("parse batchGet")?;
+        let mut parsed: BatchGetResp = serde_json::from_str(&text).context("parse batchGet")?;
+        for user in &mut parsed.users {
+            user.index();
+        }
         all.extend(parsed.users);
 
         if all.len() >= max_total {
@@ -158,8 +180,10 @@ pub async fn set_custom_attributes(
     uid: &str,
     custom_attributes_json: &str,
 ) -> Result<FirebaseUser> {
-    let url =
-        format!("https://identitytoolkit.googleapis.com/v1/projects/{project_id}/accounts:update");
+    let url = format!(
+        "https://identitytoolkit.googleapis.com/v1/projects/{}/accounts:update",
+        utf8_percent_encode(project_id, PATH_SEGMENT)
+    );
     let body = json!({
         "localId": uid,
         "customAttributes": custom_attributes_json,
@@ -194,8 +218,10 @@ async fn lookup(
     access_token: &AccessToken,
     body: serde_json::Value,
 ) -> Result<Option<FirebaseUser>> {
-    let url =
-        format!("https://identitytoolkit.googleapis.com/v1/projects/{project_id}/accounts:lookup");
+    let url = format!(
+        "https://identitytoolkit.googleapis.com/v1/projects/{}/accounts:lookup",
+        utf8_percent_encode(project_id, PATH_SEGMENT)
+    );
     let resp = http
         .0
         .post(&url)
@@ -214,12 +240,78 @@ async fn lookup(
     }
 
     let parsed: LookupResp = serde_json::from_str(&text).context("parse lookup")?;
-    Ok(parsed.users.into_iter().next())
+    Ok(parsed.users.into_iter().next().map(|mut u| {
+        u.index();
+        u
+    }))
 }
 
-fn error_message(body: &str) -> Option<String> {
-    serde_json::from_str::<serde_json::Value>(body)
-        .ok()
-        .and_then(|v| v.get("error").and_then(|e| e.get("message")).cloned())
-        .and_then(|v| v.as_str().map(String::from))
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn user(
+        email: Option<&str>,
+        phone: Option<&str>,
+        name: Option<&str>,
+        uid: &str,
+    ) -> FirebaseUser {
+        let mut u = FirebaseUser {
+            local_id: uid.to_string(),
+            email: email.map(String::from),
+            phone_number: phone.map(String::from),
+            display_name: name.map(String::from),
+            custom_attributes: None,
+            search_key: String::new(),
+        };
+        u.index();
+        u
+    }
+
+    #[test]
+    fn matches_is_case_insensitive_across_fields() {
+        let u = user(
+            Some("Ada@Example.com"),
+            Some("+15551234"),
+            Some("Ada L"),
+            "UID9",
+        );
+        for q in ["ada@example.com", "ada", "+1555", "ada l", "uid9"] {
+            assert!(u.matches(q), "expected {q:?} to match");
+        }
+        assert!(!u.matches("nobody"));
+    }
+
+    #[test]
+    fn matches_does_not_span_two_fields() {
+        // Without a separator in the haystack, "example.com+1555" would match by
+        // running the end of one field into the start of the next.
+        let u = user(Some("ada@example.com"), Some("+15551234"), None, "u1");
+        assert!(!u.matches("example.com+1555"));
+    }
+
+    #[test]
+    fn unindexed_user_matches_nothing() {
+        // Guards the invariant: every parse site must call index().
+        let u = FirebaseUser {
+            local_id: "u1".to_string(),
+            email: Some("a@b.c".to_string()),
+            phone_number: None,
+            display_name: None,
+            custom_attributes: None,
+            search_key: String::new(),
+        };
+        assert!(!u.matches("a@b.c"));
+    }
+
+    #[test]
+    fn error_message_extracts_google_api_error() {
+        let body = r#"{"error":{"code":400,"message":"INVALID_ID_TOKEN","status":"X"}}"#;
+        assert_eq!(
+            super::super::error_message(body).as_deref(),
+            Some("INVALID_ID_TOKEN")
+        );
+        assert_eq!(super::super::error_message("not json"), None);
+        assert_eq!(super::super::error_message("{}"), None);
+    }
 }

@@ -29,11 +29,12 @@ Please use a **development** project — see [SECURITY.md](./SECURITY.md) for wh
 
 ## Before opening a pull request
 
-CI runs these three, and they gate merges:
+CI runs these, and they gate merges:
 
 ```bash
 cargo fmt --all -- --check
 cargo clippy --all-targets -- -D warnings
+cargo test --all-targets
 cargo build --release
 ```
 

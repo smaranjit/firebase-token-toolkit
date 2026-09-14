@@ -18,7 +18,10 @@ tar xzf firebase-token-toolkit-*-x86_64-linux.tar.gz
 ./firebase-token-toolkit
 ```
 
-You need an [XDG desktop portal](https://wiki.archlinux.org/title/XDG_Desktop_Portal) implementation installed for the service-account file picker to open. Most desktop environments ship one; on a bare window manager, install `xdg-desktop-portal-gtk` or similar.
+Two Linux notes:
+
+- The service-account file picker goes through an [XDG desktop portal](https://wiki.archlinux.org/title/XDG_Desktop_Portal), so you need an implementation installed. Most desktop environments ship one; on a bare window manager, install `xdg-desktop-portal-gtk` or similar.
+- The **Copy** buttons use the X11 clipboard (via `arboard`, which has no native Wayland backend). Under Wayland you need XWayland running, which is the default almost everywhere. If a copy fails, the button reports the error inline.
 
 **Windows** (x86_64): unzip and run `firebase-token-toolkit.exe`. SmartScreen may warn on first launch because the binary is unsigned — choose *More info* → *Run anyway*.
 

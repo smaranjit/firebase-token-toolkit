@@ -76,3 +76,27 @@ pub async fn fetch_access_token(http: &HttpClient, sa: &ServiceAccount) -> Resul
         expires_at_unix: chrono::Utc::now().timestamp() + parsed.expires_in - 30,
     })
 }
+
+/// Return a valid access token, reusing the cached one until it is near expiry.
+///
+/// Lives here rather than in the UI layer so the refresh/caching rule exists in
+/// exactly one place; `ui/` previously carried two byte-identical copies.
+/// The freshly fetched token is stored in `cached` before returning, so callers
+/// do not need to write it back themselves.
+pub async fn ensure_access_token(
+    http: &HttpClient,
+    sa: &std::sync::Arc<ServiceAccount>,
+    cached: &std::sync::Arc<tokio::sync::Mutex<Option<AccessToken>>>,
+) -> Result<AccessToken> {
+    {
+        let guard = cached.lock().await;
+        if let Some(tok) = guard.as_ref() {
+            if !tok.is_expired() {
+                return Ok(tok.clone());
+            }
+        }
+    }
+    let fresh = fetch_access_token(http, sa).await?;
+    *cached.lock().await = Some(fresh.clone());
+    Ok(fresh)
+}

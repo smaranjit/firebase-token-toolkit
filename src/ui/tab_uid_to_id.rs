@@ -87,21 +87,24 @@ pub fn render(ui: &mut egui::Ui, shared: &mut SharedState, state: &mut TabState,
         }
     });
 
-    if let AsyncState::JustCompleted(result) = state.task.poll() {
-        match result {
-            Ok(out) => {
-                state.last_output = Some(Output {
-                    id_token: out.id_token.clone(),
-                    refresh_token: out.refresh_token.clone(),
-                    expires_in: out.expires_in.clone(),
-                });
-                state.last_error = None;
-            }
-            Err(e) => {
-                state.last_error = Some(e.to_string());
-                state.last_output = None;
-            }
+    match state.task.poll() {
+        AsyncState::JustCompleted(Ok(out)) => {
+            state.last_output = Some(Output {
+                id_token: out.id_token,
+                refresh_token: out.refresh_token,
+                expires_in: out.expires_in,
+            });
+            state.last_error = None;
         }
+        AsyncState::JustCompleted(Err(e)) => {
+            state.last_error = Some(e.to_string());
+            state.last_output = None;
+        }
+        AsyncState::Failed => {
+            state.last_error = Some("Token generation failed unexpectedly.".to_string());
+            state.last_output = None;
+        }
+        AsyncState::Pending | AsyncState::Idle => {}
     }
 
     if let Some(err) = &state.last_error {
@@ -122,11 +125,16 @@ pub fn render(ui: &mut egui::Ui, shared: &mut SharedState, state: &mut TabState,
 }
 
 fn short(s: &str) -> String {
-    if s.len() <= 24 {
-        s.to_string()
-    } else {
-        format!("{}…{}", &s[..12], &s[s.len() - 8..])
+    // Counts and slices by character, not byte: s comes from an API response
+    // field, and byte-slicing panics if a multi-byte character straddles the
+    // cut point.
+    let chars: Vec<char> = s.chars().collect();
+    if chars.len() <= 24 {
+        return s.to_string();
     }
+    let head: String = chars[..12].iter().collect();
+    let tail: String = chars[chars.len() - 8..].iter().collect();
+    format!("{head}…{tail}")
 }
 
 fn spawn_generate(state: &mut TabState, shared: &SharedState, uid: &str, rt: &Handle) {
@@ -165,4 +173,32 @@ fn spawn_generate(state: &mut TabState, shared: &SharedState, uid: &str, rt: &Ha
             expires_in: resp.expires_in,
         })
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::short;
+
+    #[test]
+    fn short_leaves_small_strings_alone() {
+        assert_eq!(short("abc"), "abc");
+        assert_eq!(short(&"x".repeat(24)), "x".repeat(24));
+    }
+
+    #[test]
+    fn short_truncates_long_ascii() {
+        let s = "a".repeat(40);
+        assert_eq!(short(&s), format!("{}…{}", "a".repeat(12), "a".repeat(8)));
+    }
+
+    #[test]
+    fn short_does_not_panic_on_multibyte_boundaries() {
+        // Regression: byte-slicing at 12 / len-8 panicked when a multi-byte
+        // character straddled either cut point.
+        for s in ["é".repeat(40), "日本語".repeat(20), "🙂".repeat(30)] {
+            let out = short(&s);
+            assert!(out.contains('…'), "expected truncation for {s:?}");
+            assert_eq!(out.chars().count(), 21); // 12 + ellipsis + 8
+        }
+    }
 }

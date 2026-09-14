@@ -1014,6 +1014,7 @@ dependencies = [
  "egui",
  "egui_extras",
  "jsonwebtoken",
+ "percent-encoding",
  "reqwest",
  "rfd",
  "serde",
