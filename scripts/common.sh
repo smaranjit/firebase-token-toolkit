@@ -20,10 +20,15 @@ require() {
 
 # Files shipped alongside the binary in every archive.
 #
-# README carries the macOS Gatekeeper and Windows SmartScreen steps, which are
-# needed exactly when the app will not launch — so they cannot live behind a
-# link inside the app. LICENSE ships because MIT requires the notice to be
-# included in all copies. The changelog and security notes are reachable from
-# the About dialog instead, where a link is always current and a shipped copy
-# would be frozen at build time.
-DOCS=(README.md LICENSE)
+# README.txt rather than README.md: on Windows a .md opens in Notepad as raw
+# markup, and the repository README is 90 lines aimed at people browsing the
+# project rather than someone who just downloaded a binary. The plain-text
+# version carries only what a downloader needs — most importantly the macOS
+# Gatekeeper and Windows SmartScreen steps, which are needed exactly when the
+# app will not launch and so cannot live behind a link inside it.
+#
+# LICENSE ships because MIT requires the notice to be included in all copies.
+# The changelog and security notes are reachable from the About dialog instead,
+# where a link is always current and a shipped copy would be frozen at build
+# time.
+DOCS=(README.txt LICENSE)

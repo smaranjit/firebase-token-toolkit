@@ -7,6 +7,9 @@ A native desktop GUI for the Firebase auth tokens you need during development an
 
 ## Install
 
+<!-- The launch and Gatekeeper/SmartScreen steps below are duplicated in
+     README.txt, which is what ships inside the release archives. Change both. -->
+
 Grab the latest build for your platform from the [releases page](https://github.com/smaranjit/firebase-token-toolkit/releases/latest).
 
 **Linux** (x86_64, glibc 2.35+ — Ubuntu 22.04 and newer):
