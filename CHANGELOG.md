@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.6]
+
+### Changed
+
+- The archives now carry `README.txt` rather than `README.md`. On Windows a
+  `.md` file opens in Notepad as raw markup, and the repository README is ninety
+  lines written for someone browsing the project, not for someone who has just
+  downloaded a binary. The plain-text version covers launching the app, the
+  Gatekeeper and SmartScreen prompts, and first-time setup.
+
 ## [0.1.5]
 
 ### Fixed
@@ -172,7 +182,8 @@ There is deliberately no automatic migration for this: it is a one-time move aff
 a handful of pre-release users, and a path-sniffing fallback would be permanent
 complexity in exchange for saving a single command.
 
-[Unreleased]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.5...HEAD
+[Unreleased]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.6...HEAD
+[0.1.6]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.2...v0.1.3
