@@ -53,7 +53,7 @@ jsonwebtoken = { version = "11", features = ["rust_crypto"] }
 base64 = "0.23"
 percent-encoding = "2"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
-rfd = "0.15"
+rfd = "0.17"
 anyhow = "1"
 arboard = "3"
 
