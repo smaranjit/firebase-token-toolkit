@@ -28,9 +28,9 @@ exclude = ["/dist", "/.github"]
 # x11 and wayland are listed explicitly because default-features = false no
 # longer pulls the winit platform backends in; without them the build fails with
 # "The platform you're compiling for is not supported by winit".
-eframe = { version = "0.33", default-features = false, features = ["default_fonts", "glow", "wgpu", "persistence", "x11", "wayland"] }
-egui = "0.33"
-egui_extras = { version = "0.33", features = ["all_loaders"] }
+eframe = { version = "0.36", default-features = false, features = ["default_fonts", "glow", "wgpu", "persistence", "x11", "wayland"] }
+egui = "0.36"
+egui_extras = { version = "0.36", features = ["all_loaders"] }
 # Declared directly, and only, to switch its default features back on. eframe
 # depends on egui-wgpu with default-features = false and re-enables them through
 # its own `default` feature — which our `default-features = false` strips. The
@@ -38,7 +38,7 @@ egui_extras = { version = "0.33", features = ["all_loaders"] }
 # so without this wgpu panics at startup with "No wgpu backend feature that is
 # implemented for the target platform was enabled". Keep the version in lockstep
 # with eframe.
-egui-wgpu = "0.33"
+egui-wgpu = "0.36"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 serde = { version = "1", features = ["derive"] }
