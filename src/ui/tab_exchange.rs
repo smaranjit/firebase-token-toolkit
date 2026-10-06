@@ -37,10 +37,10 @@ pub fn render(ui: &mut egui::Ui, shared: &mut SharedState, state: &mut TabState,
     ui.label("Calls identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken.");
     ui.add_space(8.0);
 
-    if shared.config.active().api_key.trim().is_empty() {
+    if !shared.has_api_key() {
         ui.colored_label(
             egui::Color32::LIGHT_YELLOW,
-            "Set the Firebase Web API key in the top bar.",
+            "Set an API key for the selected app in the top bar.",
         );
         return;
     }
@@ -97,7 +97,7 @@ pub fn render(ui: &mut egui::Ui, shared: &mut SharedState, state: &mut TabState,
 }
 
 fn spawn_exchange(state: &mut TabState, shared: &SharedState, rt: &Handle) {
-    let api_key = shared.config.active().api_key.trim().to_string();
+    let auth = shared.config.active().active_app().api_auth();
     let token = state.custom_token_input.trim().to_string();
     if token.is_empty() {
         state.last_error = Some("Paste a custom token first".to_string());
@@ -105,6 +105,6 @@ fn spawn_exchange(state: &mut TabState, shared: &SharedState, rt: &Handle) {
     }
     let http = shared.http.clone();
     state.task.spawn(rt, async move {
-        id_token::sign_in_with_custom_token(&http, &api_key, &token).await
+        id_token::sign_in_with_custom_token(&http, &auth, &token).await
     });
 }

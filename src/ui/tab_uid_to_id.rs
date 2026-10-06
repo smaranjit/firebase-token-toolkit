@@ -47,7 +47,7 @@ pub fn render(ui: &mut egui::Ui, shared: &mut SharedState, state: &mut TabState,
     if !shared.ready_for_id_token() {
         ui.colored_label(
             egui::Color32::LIGHT_YELLOW,
-            "Need: service account + Firebase Web API key.",
+            "Need: service account + an API key for the selected app.",
         );
         return;
     }
@@ -142,8 +142,8 @@ fn spawn_generate(state: &mut TabState, shared: &SharedState, uid: &str, rt: &Ha
         state.last_error = Some("Service account missing".to_string());
         return;
     };
-    let api_key = shared.config.active().api_key.trim().to_string();
-    if api_key.is_empty() {
+    let auth = shared.config.active().active_app().api_auth();
+    if auth.api_key.is_empty() {
         state.last_error = Some("API key required".to_string());
         return;
     }
@@ -166,7 +166,7 @@ fn spawn_generate(state: &mut TabState, shared: &SharedState, uid: &str, rt: &Ha
 
     state.task.spawn(rt, async move {
         let custom = custom_token::create(&uid, &sa, claims)?;
-        let resp = id_token::sign_in_with_custom_token(&http, &api_key, &custom).await?;
+        let resp = id_token::sign_in_with_custom_token(&http, &auth, &custom).await?;
         Ok(Output {
             id_token: resp.id_token,
             refresh_token: resp.refresh_token,
