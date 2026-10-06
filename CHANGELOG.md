@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The About dialog, the README and the user guide now ask, once and out of the
+  way, for a star on GitHub if you find the app useful.
+
 ## [0.2.0]
 
 ### Added

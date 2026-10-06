@@ -89,6 +89,13 @@ pub fn window(ctx: &egui::Context, open: &mut bool) {
             }
 
             ui.add_space(10.0);
+            ui.horizontal(|ui| {
+                ui.label("Find it useful?");
+                ui.hyperlink_to("Star it on GitHub", env!("CARGO_PKG_REPOSITORY"));
+                ui.label("— it really helps.");
+            });
+
+            ui.add_space(10.0);
             ui.separator();
             ui.add_space(6.0);
 

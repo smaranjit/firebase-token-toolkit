@@ -60,6 +60,10 @@ MORE
   Source, changelog, security notes and issue tracker:
   https://github.com/smaranjit/firebase-token-toolkit
 
+  If you find this useful, please consider starring the project on
+  GitHub, it really helps:
+  https://github.com/smaranjit/firebase-token-toolkit
+
   The About dialog, reached from the footer, links the changelog and
   security notes for this exact version.
 
