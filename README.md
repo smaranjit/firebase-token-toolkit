@@ -92,6 +92,8 @@ This tool handles Firebase **service-account private keys** and mints signed tok
 
 The short version: the service account is read from the path you pick and never copied; OAuth access tokens live in memory only; API keys and App Check debug tokens are written to disk only when you tick **remember API keys & debug tokens**.
 
+If you find this useful, please consider [starring the project on GitHub](https://github.com/smaranjit/firebase-token-toolkit), it really helps!
+
 ## Contributing
 
 Issues and pull requests are welcome — see [CONTRIBUTING.md](https://github.com/smaranjit/firebase-token-toolkit/blob/main/CONTRIBUTING.md).

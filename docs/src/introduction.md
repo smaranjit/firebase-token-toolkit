@@ -39,3 +39,7 @@ private key or the tokens it mints to disk.
 > **Use a development project.** A service-account key can sign in as any user
 > in its project, and the app shows real tokens on screen. Read the
 > [Security](security.md) page before pointing it at anything that matters.
+
+If you find this useful, please consider
+[starring the project on GitHub](https://github.com/smaranjit/firebase-token-toolkit),
+it really helps!
