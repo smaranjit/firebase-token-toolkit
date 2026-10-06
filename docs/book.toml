@@ -1,0 +1,15 @@
+[book]
+title = "Firebase Token Toolkit"
+description = "User guide for Firebase Token Toolkit, a desktop app for minting and inspecting Firebase auth tokens."
+authors = ["Smaranjit Maiti"]
+language = "en"
+src = "src"
+
+[output.html]
+site-url = "/firebase-token-toolkit/"
+git-repository-url = "https://github.com/smaranjit/firebase-token-toolkit"
+edit-url-template = "https://github.com/smaranjit/firebase-token-toolkit/edit/main/docs/{path}"
+no-section-label = true
+
+[output.html.fold]
+enable = false
