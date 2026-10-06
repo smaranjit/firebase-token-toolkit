@@ -25,5 +25,6 @@
 - [Settings and storage](reference/settings-storage.md)
 - [Google endpoints](reference/endpoints.md)
 - [Troubleshooting](troubleshooting.md)
+- [FAQ](faq.md)
 - [Security](security.md)
 - [Building and contributing](contributing.md)

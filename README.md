@@ -2,6 +2,8 @@
 
 A native desktop GUI for the Firebase auth tokens you need during development and testing — mint custom tokens from a UID, exchange them for ID tokens, edit a user's custom claims, and pull App Check debug tokens. One window, no Node, no webview, no Java runtime.
 
+Use it to test any API that expects a Firebase ID token — paste it into Postman, curl or your own tests, and it passes `verifyIdToken` like a token from a signed-in user. It works with web, Android and iOS apps, including API keys restricted to one app. Common questions are answered in the [FAQ](https://smaranjit.github.io/firebase-token-toolkit/faq.html).
+
 [![CI](https://github.com/smaranjit/firebase-token-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/smaranjit/firebase-token-toolkit/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Docs](https://img.shields.io/badge/docs-user%20guide-blue.svg)](https://smaranjit.github.io/firebase-token-toolkit/)

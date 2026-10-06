@@ -1,6 +1,6 @@
 [book]
 title = "Firebase Token Toolkit"
-description = "User guide for Firebase Token Toolkit, a desktop app for minting and inspecting Firebase auth tokens."
+description = "Generate Firebase ID tokens and custom tokens for API testing, edit custom claims, and get App Check debug tokens: the guide to Firebase Token Toolkit, a free desktop app for web, Android and iOS projects."
 authors = ["Smaranjit Maiti"]
 language = "en"
 src = "src"

@@ -3,7 +3,8 @@
 Firebase Token Toolkit is a desktop app for getting the Firebase auth tokens
 you need while developing and testing a backend. Pick a user, click
 **Generate**, and you have a real ID token for that user, with its claims
-decoded underneath and a **Copy** button next to it.
+decoded underneath and a **Copy** button next to it. Paste it into Postman,
+curl or your own tests to call any API that verifies Firebase ID tokens.
 
 ![Loading the project's apps, picking the Android app and a user, and generating an ID token](images/quick-start.gif)
 
@@ -35,6 +36,8 @@ private key or the tokens it mints to disk.
    usually just a service-account key. The app can read the project's web,
    Android and iOS apps itself.
 3. Follow the [Quick start](quick-start.md) to your first ID token.
+
+Have a specific question? The [FAQ](faq.md) answers the common ones.
 
 > **Use a development project.** A service-account key can sign in as any user
 > in its project, and the app shows real tokens on screen. Read the

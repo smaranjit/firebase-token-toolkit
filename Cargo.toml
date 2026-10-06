@@ -14,7 +14,7 @@ license = "MIT"
 readme = "README.md"
 repository = "https://github.com/smaranjit/firebase-token-toolkit"
 homepage = "https://github.com/smaranjit/firebase-token-toolkit"
-keywords = ["firebase", "auth", "jwt", "gui", "egui"]
+keywords = ["firebase", "firebase-auth", "id-token", "jwt", "app-check"]
 categories = ["development-tools", "gui", "authentication"]
 # NOT excluding /assets: main.rs include_bytes!s icon-256.png and build.rs reads
 # icon.ico, so dropping it here would break a packaged build.
