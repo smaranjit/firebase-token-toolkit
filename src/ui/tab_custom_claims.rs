@@ -148,7 +148,7 @@ pub fn render(ui: &mut egui::Ui, shared: &mut SharedState, state: &mut TabState,
         }
         if ui
             .add_enabled(can_save, egui::Button::new("Clear all claims"))
-            .on_hover_text("Sends an empty customAttributes string — removes every persistent claim from this user.")
+            .on_hover_text("Sends an empty claims object ({}) — removes every persistent claim from this user.")
             .clicked()
         {
             spawn_save(state, shared, &uid, true, rt);
@@ -157,13 +157,7 @@ pub fn render(ui: &mut egui::Ui, shared: &mut SharedState, state: &mut TabState,
 
     match state.fetch_task.poll() {
         AsyncState::JustCompleted(Ok(Some(user))) => {
-            state.editor = match user.custom_attributes.as_deref() {
-                None | Some("") => String::new(),
-                Some(raw) => serde_json::from_str::<Value>(raw)
-                    .ok()
-                    .and_then(|v| serde_json::to_string_pretty(&v).ok())
-                    .unwrap_or_else(|| raw.to_string()),
-            };
+            state.editor = claims_for_editor(user.custom_attributes.as_deref());
             state.last_loaded_uid = Some(user.local_id);
             state.last_error = None;
             state.last_info = Some(if state.editor.is_empty() {
@@ -189,15 +183,7 @@ pub fn render(ui: &mut egui::Ui, shared: &mut SharedState, state: &mut TabState,
 
     match state.save_task.poll() {
         AsyncState::JustCompleted(Ok(user)) => {
-            let raw = user.custom_attributes.as_deref().unwrap_or("");
-            state.editor = if raw.is_empty() {
-                String::new()
-            } else {
-                serde_json::from_str::<Value>(raw)
-                    .ok()
-                    .and_then(|v| serde_json::to_string_pretty(&v).ok())
-                    .unwrap_or_else(|| raw.to_string())
-            };
+            state.editor = claims_for_editor(user.custom_attributes.as_deref());
             state.last_loaded_uid = Some(user.local_id);
             state.last_error = None;
             state.last_info = Some(if state.editor.is_empty() {
@@ -268,6 +254,11 @@ fn spawn_fetch(state: &mut TabState, shared: &SharedState, uid: &str, rt: &Handl
 }
 
 fn spawn_save(state: &mut TabState, shared: &SharedState, uid: &str, clear: bool, rt: &Handle) {
+    // Clear any message from a previous attempt, so a refusal below is not
+    // shown next to a stale "Saved." from the last successful save.
+    state.last_info = None;
+    state.last_error = None;
+
     let Some(sa) = shared.service_account.clone() else {
         state.last_error = Some("Service account missing".to_string());
         return;
@@ -278,8 +269,11 @@ fn spawn_save(state: &mut TabState, shared: &SharedState, uid: &str, clear: bool
         return;
     }
 
+    // An empty object, not an empty string: accounts:update now rejects ""
+    // with INVALID_CLAIMS ("Not a JSON Object: null"). The Admin SDKs send
+    // "{}" to clear claims as well.
     let serialized = if clear {
-        String::new()
+        "{}".to_string()
     } else {
         let trimmed = state.editor.trim();
         if trimmed.is_empty() {
@@ -313,11 +307,46 @@ fn spawn_save(state: &mut TabState, shared: &SharedState, uid: &str, clear: bool
     let http = shared.http.clone();
     let cached = shared.access_token.clone();
     let uid = uid.to_string();
-    state.last_info = None;
-    state.last_error = None;
 
     state.save_task.spawn(rt, async move {
         let tok = ensure_access_token(&http, &sa, &cached).await?;
         set_custom_attributes(&http, &project_id, &tok, &uid, &serialized).await
     });
+}
+
+/// Format stored `customAttributes` for the editor. No claims (absent, empty,
+/// or the `{}` that clearing leaves behind) becomes an empty editor.
+fn claims_for_editor(raw: Option<&str>) -> String {
+    let raw = raw.unwrap_or("").trim();
+    if raw.is_empty() {
+        return String::new();
+    }
+    match serde_json::from_str::<Value>(raw) {
+        Ok(Value::Object(map)) if map.is_empty() => String::new(),
+        Ok(v) => serde_json::to_string_pretty(&v).unwrap_or_else(|_| raw.to_string()),
+        Err(_) => raw.to_string(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::claims_for_editor;
+
+    #[test]
+    fn no_claims_shows_an_empty_editor() {
+        assert_eq!(claims_for_editor(None), "");
+        assert_eq!(claims_for_editor(Some("")), "");
+        assert_eq!(claims_for_editor(Some("{}")), "");
+        assert_eq!(claims_for_editor(Some(" { } ")), "");
+    }
+
+    #[test]
+    fn claims_are_pretty_printed() {
+        assert_eq!(
+            claims_for_editor(Some(r#"{"role":"admin"}"#)),
+            "{\n  \"role\": \"admin\"\n}"
+        );
+        // Unparseable input is shown as-is rather than dropped.
+        assert_eq!(claims_for_editor(Some("not json")), "not json");
+    }
 }
