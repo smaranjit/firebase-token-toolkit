@@ -5,7 +5,7 @@ use tokio::runtime::Handle;
 use tokio::sync::Mutex;
 
 use crate::async_task::AsyncTask;
-use crate::config::PersistedConfig;
+use crate::config::{PersistedConfig, RemoteApp};
 use crate::firebase::oauth::AccessToken;
 use crate::firebase::service_account::ServiceAccount;
 use crate::firebase::HttpClient;
@@ -68,6 +68,10 @@ pub struct SharedState {
     pub selected_user_label: Option<String>,
     pub status_message: Option<(StatusKind, String)>,
     pub requested_profile_switch: Option<usize>,
+    /// Index into the active profile's apps, applied at the top of next frame.
+    pub requested_app_switch: Option<usize>,
+    /// In-flight "Load apps" import from the Firebase Management API.
+    pub apps_import: AsyncTask<anyhow::Result<Vec<RemoteApp>>>,
     /// In-flight service-account file picker. Async so the dialog's D-Bus round
     /// trip does not block the render thread.
     pub file_dialog: AsyncTask<Option<std::path::PathBuf>>,
@@ -92,7 +96,12 @@ impl SharedState {
     }
 
     pub fn ready_for_id_token(&self) -> bool {
-        self.sa_loaded() && !self.config.active().api_key.trim().is_empty()
+        self.sa_loaded() && self.has_api_key()
+    }
+
+    /// The selected app has an API key, which the ID-token and App Check tabs need.
+    pub fn has_api_key(&self) -> bool {
+        !self.config.active().active_app().api_key.trim().is_empty()
     }
 
     pub fn ready_for_users(&self) -> bool {
@@ -147,6 +156,8 @@ impl FirebaseToolApp {
             selected_user_label: None,
             status_message: None,
             requested_profile_switch: None,
+            requested_app_switch: None,
+            apps_import: AsyncTask::new(),
             file_dialog: AsyncTask::new(),
             sa_autofilled_project_id: None,
         };
@@ -174,6 +185,9 @@ impl FirebaseToolApp {
         self.shared.selected_uid = None;
         self.shared.selected_user_label = None;
         self.shared.access_token = Arc::new(Mutex::new(None));
+        // A late import would otherwise merge into the newly selected profile.
+        self.shared.apps_import.abort();
+        self.shared.requested_app_switch = None;
         self.picker = uid_picker::UidPickerState::default();
         self.tab_uid_custom = tab_uid_to_custom::TabState::default();
         self.tab_uid_id = tab_uid_to_id::TabState::default();
@@ -182,9 +196,29 @@ impl FirebaseToolApp {
         self.tab_appcheck = tab_appcheck::TabState::default();
     }
 
+    /// Select another app in the active profile. Only results that came from
+    /// the previous app's API key are cleared; the user list, selection and
+    /// service-account work are unaffected.
+    fn switch_app(&mut self, idx: usize) {
+        let profile = self.shared.config.active_mut();
+        profile.active_app = idx.min(profile.apps.len().saturating_sub(1));
+        let claims_input = std::mem::take(&mut self.tab_uid_id.claims_input);
+        self.tab_uid_id = tab_uid_to_id::TabState {
+            claims_input,
+            ..Default::default()
+        };
+        let custom_token_input = std::mem::take(&mut self.tab_exchange.custom_token_input);
+        self.tab_exchange = tab_exchange::TabState {
+            custom_token_input,
+            ..Default::default()
+        };
+        self.tab_appcheck = tab_appcheck::TabState::default();
+    }
+
     fn ensure_repaint(&self, ctx: &egui::Context) {
         if self.access_token_task.is_pending()
             || self.shared.file_dialog.is_pending()
+            || self.shared.apps_import.is_pending()
             || self.picker.has_pending()
             || self.tab_uid_custom.has_pending()
             || self.tab_uid_id.has_pending()
@@ -208,6 +242,9 @@ impl eframe::App for FirebaseToolApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         if let Some(idx) = self.shared.requested_profile_switch.take() {
             self.switch_profile(idx);
+        }
+        if let Some(idx) = self.shared.requested_app_switch.take() {
+            self.switch_app(idx);
         }
 
         egui::TopBottomPanel::top("settings").show(ctx, |ui| {
@@ -266,25 +303,34 @@ impl eframe::App for FirebaseToolApp {
                 });
         }
 
-        egui::CentralPanel::default().show(ctx, |ui| match self.tab {
-            Tab::UidToCustom => {
-                tab_uid_to_custom::render(ui, &mut self.shared, &mut self.tab_uid_custom, &self.rt)
-            }
-            Tab::UidToId => {
-                tab_uid_to_id::render(ui, &mut self.shared, &mut self.tab_uid_id, &self.rt)
-            }
-            Tab::Exchange => {
-                tab_exchange::render(ui, &mut self.shared, &mut self.tab_exchange, &self.rt)
-            }
-            Tab::CustomClaims => tab_custom_claims::render(
-                ui,
-                &mut self.shared,
-                &mut self.tab_custom_claims,
-                &self.rt,
-            ),
-            Tab::AppCheck => {
-                tab_appcheck::render(ui, &mut self.shared, &mut self.tab_appcheck, &self.rt)
-            }
+        // The tab scrolls as a whole, so a long result (token, refresh token and
+        // a full claims table) stays reachable however tall the top bar is.
+        egui::CentralPanel::default().show(ctx, |ui| {
+            egui::ScrollArea::vertical()
+                .auto_shrink([false, false])
+                .show(ui, |ui| match self.tab {
+                    Tab::UidToCustom => tab_uid_to_custom::render(
+                        ui,
+                        &mut self.shared,
+                        &mut self.tab_uid_custom,
+                        &self.rt,
+                    ),
+                    Tab::UidToId => {
+                        tab_uid_to_id::render(ui, &mut self.shared, &mut self.tab_uid_id, &self.rt)
+                    }
+                    Tab::Exchange => {
+                        tab_exchange::render(ui, &mut self.shared, &mut self.tab_exchange, &self.rt)
+                    }
+                    Tab::CustomClaims => tab_custom_claims::render(
+                        ui,
+                        &mut self.shared,
+                        &mut self.tab_custom_claims,
+                        &self.rt,
+                    ),
+                    Tab::AppCheck => {
+                        tab_appcheck::render(ui, &mut self.shared, &mut self.tab_appcheck, &self.rt)
+                    }
+                });
         });
 
         self.ensure_repaint(ctx);

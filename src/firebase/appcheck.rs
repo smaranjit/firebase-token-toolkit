@@ -2,7 +2,7 @@ use anyhow::{anyhow, Context, Result};
 use serde::Deserialize;
 use serde_json::json;
 
-use super::{error_message, HttpClient, PATH_SEGMENT};
+use super::{error_message, ApiKeyAuth, HttpClient, PATH_SEGMENT};
 use percent_encoding::utf8_percent_encode;
 
 #[derive(Debug, Clone, Deserialize)]
@@ -17,7 +17,7 @@ pub async fn exchange_debug_token(
     project_id: &str,
     app_id: &str,
     debug_token: &str,
-    api_key: &str,
+    auth: &ApiKeyAuth,
 ) -> Result<AppCheckResponse> {
     // project_id and app_id are path segments, so they are percent-encoded
     // individually rather than interpolated raw.
@@ -28,10 +28,8 @@ pub async fn exchange_debug_token(
     );
     let body = json!({ "debugToken": debug_token });
 
-    let resp = http
-        .0
-        .post(&url)
-        .query(&[("key", api_key)])
+    let resp = auth
+        .apply(http.0.post(&url))
         .json(&body)
         .send()
         .await

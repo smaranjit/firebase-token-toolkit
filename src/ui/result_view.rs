@@ -64,6 +64,9 @@ pub fn jwt_claims(ui: &mut egui::Ui, token: &str) {
         egui_extras::TableBuilder::new(ui)
             .striped(true)
             .resizable(false)
+            // The tab itself scrolls; a second, height-capped scroll area here
+            // left the last claims clipped below the window.
+            .vscroll(false)
             .column(egui_extras::Column::auto().at_least(120.0))
             .column(egui_extras::Column::remainder())
             .header(20.0, |mut header| {

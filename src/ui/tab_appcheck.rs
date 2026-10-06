@@ -36,26 +36,26 @@ pub fn render(ui: &mut egui::Ui, shared: &mut SharedState, state: &mut TabState,
     ui.add_space(8.0);
 
     let project_id = shared.config.active().project_id.trim();
-    let app_id = shared.config.active().app_id.trim();
-    let api_key = shared.config.active().api_key.trim();
+    let app = shared.config.active().active_app();
 
-    if project_id.is_empty() || app_id.is_empty() || api_key.is_empty() {
+    if project_id.is_empty() || app.app_id.trim().is_empty() || app.api_key.trim().is_empty() {
         ui.colored_label(
             egui::Color32::LIGHT_YELLOW,
-            "Need: Project ID, App ID, and Firebase Web API key (top bar).",
+            "Need: Project ID, plus the selected app's App ID and API key (top bar).",
         );
         return;
     }
+    ui.label(format!("App: {}", app.display_label()));
 
-    ui.label("Debug token (from Firebase Console → App Check → Manage debug tokens):");
+    ui.label("Debug token (from Firebase Console > App Check > Manage debug tokens):");
     ui.add(
-        egui::TextEdit::singleline(&mut shared.config.active_mut().debug_token)
+        egui::TextEdit::singleline(&mut shared.config.active_mut().active_app_mut().debug_token)
             .desired_width(f32::INFINITY)
             .password(true)
             .font(egui::TextStyle::Monospace)
             .hint_text("debug secret UUID"),
     );
-    ui.weak("Saved between launches only when 'remember API key & App ID' is on (top bar).");
+    ui.weak("Saved with this app, between launches only when 'remember API keys & debug tokens' is on (top bar).");
 
     ui.add_space(6.0);
     ui.horizontal(|ui| {
@@ -103,15 +103,16 @@ pub fn render(ui: &mut egui::Ui, shared: &mut SharedState, state: &mut TabState,
 
 fn spawn_exchange(state: &mut TabState, shared: &SharedState, rt: &Handle) {
     let project_id = shared.config.active().project_id.trim().to_string();
-    let app_id = shared.config.active().app_id.trim().to_string();
-    let api_key = shared.config.active().api_key.trim().to_string();
-    let debug = shared.config.active().debug_token.trim().to_string();
+    let app = shared.config.active().active_app();
+    let app_id = app.app_id.trim().to_string();
+    let auth = app.api_auth();
+    let debug = app.debug_token.trim().to_string();
     if debug.is_empty() {
         state.last_error = Some("Debug token required".to_string());
         return;
     }
     let http = shared.http.clone();
     state.task.spawn(rt, async move {
-        appcheck::exchange_debug_token(&http, &project_id, &app_id, &debug, &api_key).await
+        appcheck::exchange_debug_token(&http, &project_id, &app_id, &debug, &auth).await
     });
 }
