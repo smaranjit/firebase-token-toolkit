@@ -8,11 +8,27 @@ browser; nothing else leaves the app.
 | Action in the app | Request | Authenticated with |
 |---|---|---|
 | **Generate** on *UID -> Custom Token* | None. The token is signed locally. | — |
-| **Generate** on *UID -> ID Token*, **Exchange** on *Custom -> ID Token* | `POST identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken` | Web API key |
+| **Generate** on *UID -> ID Token*, **Exchange** on *Custom -> ID Token* | `POST identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken` | Selected app's API key |
 | **Load users** / **Refresh** | `GET identitytoolkit.googleapis.com/v1/projects/{project}/accounts:batchGet` (1,000 per page, up to 5,000) | OAuth access token |
 | **Lookup**, **Load current** | `POST identitytoolkit.googleapis.com/v1/projects/{project}/accounts:lookup` | OAuth access token |
 | **Save**, **Clear all claims** | `POST identitytoolkit.googleapis.com/v1/projects/{project}/accounts:update`, then a lookup to read the result back | OAuth access token |
-| **Exchange** on *App Check* | `POST firebaseappcheck.googleapis.com/v1beta/projects/{project}/apps/{app}:exchangeDebugToken` | Web API key |
+| **Exchange** on *App Check* | `POST firebaseappcheck.googleapis.com/v1beta/projects/{project}/apps/{app}:exchangeDebugToken` | Selected app's API key |
+| **Load apps** | `GET firebase.googleapis.com/v1beta1/projects/{project}:searchApps`, then for each app `GET …/webApps/{app}/config`, `…/androidApps/{app}/config` and `…/androidApps/{app}/sha`, or `…/iosApps/{app}/config` | OAuth access token |
+
+## API keys and app identity
+
+Requests authenticated with an API key send it as the `key` query parameter.
+For an Android or iOS app, the request also names the app, so that keys
+restricted to that app are accepted:
+
+| App type | Headers |
+|---|---|
+| Web | none |
+| Android | `X-Android-Package: <package>`, `X-Android-Cert: <SHA-1, 40 uppercase hex digits>` |
+| iOS | `X-Ios-Bundle-Identifier: <bundle ID>` |
+
+A header is left out when its value is empty, and a SHA-1 that is not 40 hex
+digits is not sent.
 
 ## OAuth access tokens
 

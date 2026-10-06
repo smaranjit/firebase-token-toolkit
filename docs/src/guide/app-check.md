@@ -5,12 +5,13 @@ for a real App Check token. Use it to call App Check–protected backends, such
 as Cloud Functions or your own server, from scripts or API tools that cannot
 run the App Check SDK.
 
-**Needs:** the Project ID, App ID and Web API key from the top bar. No service
-account is required.
+**Needs:** the Project ID, and an [app](../configuration.md#apps) with an App
+ID and API key. No service account is required. It works for web, Android and
+iOS apps; the tab names the app it will use.
 
 ## Before you start
 
-Register a debug token for your web app in the Firebase console under **App
+Register a debug token for the app in the Firebase console under **App
 Check** → **Apps** → ⋮ → **Manage debug tokens**. The steps are in [Preparing
 your Firebase project](../firebase-setup.md#app-check-debug-token-app-check-only).
 
@@ -38,9 +39,10 @@ configured for a different project rejects the token.
 
 ## Saving the debug token
 
-The debug token belongs to the profile, but like the API key it is saved
-between launches only when **remember API key & App ID** is ticked. Otherwise
-you paste it again after restarting.
+Each app keeps its own debug token, so switching apps switches tokens too. Like
+API keys, debug tokens are saved between launches only when **remember API
+keys & debug tokens** is ticked. Otherwise you paste it again after
+restarting.
 
 ## When the exchange fails
 

@@ -1,7 +1,8 @@
 # Profiles
 
-A profile holds one project's settings: service-account path, Project ID, API
-key, App ID and App Check debug token. Keep one per Firebase project, for
+A profile holds one project's settings: service-account path, Project ID, and
+the project's [apps](configuration.md#apps) with their API keys and App Check
+debug tokens. Keep one per Firebase project, for
 example *Dev*, *Staging* and *Production*, and switch between them from the
 **Profile** dropdown.
 
@@ -34,7 +35,7 @@ belongs to the profile shown in the dropdown.
 
 ## Saving
 
-Profile names, service-account paths and Project IDs are always saved. API
-keys, App IDs and debug tokens are saved only while **remember API key & App
-ID** is ticked, and that checkbox applies to every profile, not just the active
-one. See [Settings and storage](reference/settings-storage.md).
+Profile names, service-account paths, Project IDs and app lists are always
+saved. API keys and debug tokens are saved only while **remember API keys &
+debug tokens** is ticked, and that checkbox applies to every profile, not just
+the active one. See [Settings and storage](reference/settings-storage.md).

@@ -34,13 +34,15 @@ SETTING IT UP
      Project Settings > Service accounts > Generate new private key. The
      project ID fills itself in from the file.
 
-  2. API key. Firebase Console > Project Settings > General > Web API Key.
-     Only needed for the ID token and App Check tabs.
+  2. Apps. Click Load apps to import the project's web, Android and iOS
+     apps with their API keys. Or click + Add app and paste an API key and
+     App ID from Firebase Console > Project Settings > General > Your apps.
 
-  3. App ID. Only needed for the App Check tab.
+  3. Pick the app to use from the App list. Its API key is used by the
+     ID token and App Check tabs.
 
-  The indicator in the top right turns green once the service account is
-  loaded and an API key is set.
+  The indicator turns green once the service account is loaded and the
+  selected app has an API key.
 
 
 IF NOTHING OPENS

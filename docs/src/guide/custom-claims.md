@@ -39,7 +39,7 @@ Firebase rejects claims larger than 1,000 bytes. A counter under the editor
 measures the claims compactly serialized, which is how Firebase counts them, so
 whitespace from **Pretty-print** does not count:
 
-- grey `29 / 1000 bytes serialized`: within the limit,
+- grey `39 / 1000 bytes serialized`: within the limit,
 - red `1040 / 1000 bytes (Firebase will reject)`: too large; **Save** refuses
   with an error,
 - yellow `(invalid JSON — fix before saving)`.
@@ -52,9 +52,10 @@ suit roles and flags rather than profile data.
 ## Removing all claims
 
 Saving an empty editor is refused on purpose, to avoid wiping claims by
-accident. To remove everything, click **Clear all claims**. It sends an empty
-`customAttributes` value, and the message reads *Saved — all custom claims
-cleared.*
+accident. To remove everything, click **Clear all claims**. It saves an empty
+claims object (`{}`), and the message reads *Saved — all custom claims
+cleared.* Loading a user whose claims are `{}` shows an empty editor and *Loaded
+— user has no custom claims set.*
 
 ## When changes take effect
 

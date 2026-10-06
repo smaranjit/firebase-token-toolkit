@@ -28,14 +28,16 @@ Persisted for every profile:
   on demand and never copied into the config.
 - Project ID, and the last-used tab.
 - Window size and position.
+- Each app's name, type, App ID, Android package name and SHA-1, and iOS bundle
+  ID. These are public identifiers that ship inside every build of the app.
 
-Persisted **only when "remember API key & App ID" is enabled**:
+Persisted **only when "remember API keys & debug tokens" is enabled**:
 
-- Web API key, App ID, and App Check debug token.
+- Each app's API key and App Check debug token.
 
 These are stored in **plaintext**. There is no OS keychain integration — the file is
 protected by nothing but its filesystem permissions. If you would not paste the value
-into a plaintext file, leave "remember API key & App ID" off. Turning it off clears those fields
+into a plaintext file, leave "remember API keys & debug tokens" off. Turning it off clears those fields
 for *all* profiles on the next save (`clear_secrets_all` in `src/config.rs`).
 
 **Never persisted:** the service-account private key, OAuth access tokens, and any
@@ -59,6 +61,13 @@ All requests go to Google endpoints over TLS (`rustls` — no OpenSSL):
 - `identitytoolkit.googleapis.com` — `signInWithCustomToken`, `accounts:batchGet`,
   `accounts:lookup`, `accounts:update`
 - `firebaseappcheck.googleapis.com` — `exchangeDebugToken`
+- `firebase.googleapis.com` — `searchApps` and each app's config and SHA
+  certificates, when you click **Load apps**. The responses include the apps'
+  API keys, which are held like any other API key above.
+
+Requests made with an Android or iOS app's API key carry that app's package
+name and SHA-1, or bundle ID, in the `X-Android-Package`, `X-Android-Cert` and
+`X-Ios-Bundle-Identifier` headers, as the Firebase SDKs do.
 
 There is **no telemetry, analytics, or update check**. The application makes no
 network request you did not initiate.

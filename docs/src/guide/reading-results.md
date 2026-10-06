@@ -16,7 +16,8 @@ text in the box and copy it with <kbd>Ctrl</kbd>+<kbd>C</kbd>
 ## Decoded JWT claims
 
 Click **Decoded JWT claims** to expand a table of everything in the token's
-payload, sorted by name. Values are selectable for copying.
+payload, sorted by name. Values are selectable for copying. Scroll the tab to
+reach the rest of a long table.
 
 Timestamps are shown twice, as the raw Unix time and as UTC, for example
 `1791308692 (2026-10-06T17:44:52+00:00)`. That applies to `iat` (issued at),

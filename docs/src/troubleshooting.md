@@ -49,12 +49,15 @@ carries on with wgpu.
 
 | Message | Cause and fix |
 |---|---|
-| `API key required` | Enter the Web API key in the top bar. |
+| `API key required` | The selected app has no API key. Click **Load apps**, or paste the key. |
 | `API error (400): INVALID_CUSTOM_TOKEN : Invalid assertion format. 3 dot separated segments required.` | The pasted text is not a whole token. It usually lost characters while being copied. |
 | `API error (400): INVALID_CUSTOM_TOKEN …` with other text | The token has expired (custom tokens last one hour) or is malformed. Generate a new one. |
 | `API error (400): CREDENTIAL_MISMATCH` | The custom token was signed with a key from a different project than the API key belongs to. Check that the profile's key and API key are from the same project. |
 | `API error (400): API key not valid. Please pass a valid API key.` | The API key is wrong or deleted. Copy it again from **Project settings** → **General**. |
-| `API error (403): … are blocked.` | The API key has restrictions that exclude the Identity Toolkit API or the App Check API. Loosen them in Google Cloud Console. |
+| `API error (403): Requests from this Android client application <empty> are blocked.` (or the iOS equivalent) | The key is restricted to an Android or iOS app, but the selected app is a different type, or its **Package** or **Bundle ID** is empty. Select the matching app, or fill in its identifiers. |
+| `API error (403): Requests from this Android client application dev.example.app are blocked.` | The package or SHA-1 does not match the key's restriction. Check both against the key in Google Cloud Console → **Credentials**. A SHA-1 marked *invalid* in the top bar is not sent. |
+| `API error (403): Requests from this iOS client application <bundle> are blocked.` | The bundle ID does not match the key's restriction. |
+| `API error (403): … are blocked.` (other) | The API key has restrictions that exclude the Identity Toolkit API or the App Check API. Loosen them in Google Cloud Console. |
 | `Invalid claims JSON: …` / `custom claims must be a JSON object` | The optional claims box must hold a JSON object, such as `{"role":"admin"}`, or be empty. |
 | `Paste a custom token first` | The *Custom -> ID Token* input is empty. |
 
@@ -76,6 +79,14 @@ carries on with wgpu.
 | `API error (403): …` with other text | The App Check API is not enabled for the project, or the API key's restrictions exclude it. |
 | `API error (404): …` | The App ID does not exist in the project named in **Project ID**. |
 
+## Load apps
+
+| Message | Cause and fix |
+|---|---|
+| `Loading apps failed: API error (403): …` | The service account may not read Firebase apps, or the Firebase Management API is disabled. Grant **Firebase Viewer** (`roles/firebase.viewer`), or add the app by hand with **+ Add app**. |
+| `No apps found in this Firebase project.` | The project has no registered apps. Add one under **Project settings** → **General** → **Your apps**. |
+| `Loaded apps: … Some details are missing — …` | The list loaded, but one app's config or certificates could not be read. That app is listed without its key; fill it in by hand. |
+
 ## Linux desktop issues
 
 **Browse… does nothing.** The file chooser goes through an XDG desktop
@@ -87,6 +98,8 @@ pure Wayland session without XWayland, select the token text and copy it with
 <kbd>Ctrl</kbd>+<kbd>C</kbd> instead.
 
 ## About dialog links return 404
+
+![The About dialog, with its Source, Changelog and Security notes links](images/about-dialog.png)
 
 The **Changelog** and **Security notes** links in the About dialog point at
 the git tag matching the app's version. A build from an untagged commit has no

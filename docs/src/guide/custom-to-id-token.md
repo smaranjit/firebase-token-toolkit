@@ -5,15 +5,16 @@ Exchanges a custom token you already have for an ID token, by calling
 somewhere else, such as by your own backend, or one copied from the
 [UID -> Custom Token](uid-to-custom-token.md) tab.
 
-**Needs:** the Web API key. No service account is required, so this tab works
-in a profile that only has an API key.
+**Needs:** an [app](../configuration.md#apps) with an API key. No service
+account is required, so this tab works in a profile that only has an app's
+key.
 
 ## Exchanging a token
 
 1. Paste the token into **Custom token**.
 2. Click **Exchange**.
 
-![A pasted custom token exchanged for an ID token](../images/custom-to-id-result.png)
+![The ID token from an exchanged custom token, with tier from the custom token next to plan and role stored on the user](../images/custom-to-id-result.png)
 
 The result shows the ID token with a **Copy** button, **Expires in**, and the
 decoded claims. Claims carried in the custom token, such as `tier` above, show

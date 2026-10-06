@@ -6,7 +6,7 @@ A native desktop GUI for the Firebase auth tokens you need during development an
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Docs](https://img.shields.io/badge/docs-user%20guide-blue.svg)](https://smaranjit.github.io/firebase-token-toolkit/)
 
-![Loading users, picking one, and generating an ID token](docs/src/images/quick-start.gif)
+![Loading the project's apps, picking the Android app and a user, and generating an ID token](docs/src/images/quick-start.gif)
 
 **[Read the user guide →](https://smaranjit.github.io/firebase-token-toolkit/)** It covers setup, every tab, profiles, and troubleshooting.
 
@@ -41,7 +41,8 @@ xattr -dr com.apple.quarantine "/Applications/Firebase Token Toolkit.app"
 
 ## Features
 
-- **Multiple profiles** — switch between Firebase projects (dev/staging/prod, multiple clients, …) from a dropdown in the top bar. Each profile remembers its own service-account path, project ID, API key, App ID, and debug token. Switching a profile reloads the service account and clears the user list, OAuth cache, selected UID, and all tab outputs.
+- **Multiple profiles** — switch between Firebase projects (dev/staging/prod, multiple clients, …) from a dropdown in the top bar. Each profile remembers its own service-account path, project ID, and apps. Switching a profile reloads the service account and clears the user list, OAuth cache, selected UID, and all tab outputs.
+- **Web, Android and iOS apps** — **Load apps** imports the project's apps with their API keys through the Firebase Management API, or add them by hand. Requests made with an Android or iOS app's key send its package name and SHA-1, or bundle ID, so keys restricted to that app work.
 - **UID -> Custom Token** — sign a Firebase custom token (RS256) using a service account, with optional custom claims.
 - **UID -> ID Token** — one-shot: sign a custom token, then exchange it via `signInWithCustomToken`.
 - **Custom -> ID Token** — paste a custom token and exchange it for an ID token.
@@ -49,17 +50,17 @@ xattr -dr com.apple.quarantine "/Applications/Firebase Token Toolkit.app"
 - **App Check** — exchange a registered debug token via `firebaseappcheck.googleapis.com`.
 - **Dynamic UID picker** — a left-side panel lists every user via `accounts:batchGet` (paginated up to 5,000) and lets you search by email, phone, or UID. Direct lookups fall through to `accounts:lookup` for users not present in the loaded page.
 - Decoded JWT claims table for every token, with timestamp → ISO conversion and clipboard copy.
-- Persists project ID, service-account path, and last-used tab between launches. API keys, App IDs and App Check debug tokens are persisted **only if you opt in** — see [Security](#security).
+- Persists project ID, service-account path, and last-used tab between launches. API keys and App Check debug tokens are persisted **only if you opt in** — see [Security](#security).
 
 ## Configure
 
 In the top bar:
 
 1. **Service account** → *Browse* and pick the JSON from Firebase Console → Project Settings → Service accounts → *Generate new private key*. The project ID auto-populates from the file.
-2. **API key** → Firebase Console → Project Settings → General → Web API Key. Only needed for the ID-token and App Check tabs.
-3. **App ID** → only needed for the App Check tab.
+2. **Load apps** → imports the project's web, Android and iOS apps with their App IDs and API keys. Or use **+ Add app** and paste an API key and App ID from Firebase Console → Project Settings → General → Your apps.
+3. Pick the app to use from the **App** dropdown. Its API key is used by the ID-token and App Check tabs.
 
-The status indicator next to the service account turns green and reads **ready** once the service account is loaded and an API key is set. The [quick start](https://smaranjit.github.io/firebase-token-toolkit/quick-start.html) walks through it with screenshots.
+The status indicator next to the service account turns green and reads **ready** once the service account is loaded and the selected app has an API key. The [quick start](https://smaranjit.github.io/firebase-token-toolkit/quick-start.html) walks through it with screenshots.
 
 ## Build from source
 
@@ -89,7 +90,7 @@ To reproduce the packaged release artifacts, see [`scripts/`](https://github.com
 
 This tool handles Firebase **service-account private keys** and mints signed tokens with them. Please read [SECURITY.md](https://github.com/smaranjit/firebase-token-toolkit/blob/main/SECURITY.md) before using it against anything that matters — it covers what is written to disk, what stays in memory, and how to report a vulnerability.
 
-The short version: the service account is read from the path you pick and never copied; OAuth access tokens live in memory only; API keys, App IDs and App Check debug tokens are written to disk only when you tick **remember API key & App ID**.
+The short version: the service account is read from the path you pick and never copied; OAuth access tokens live in memory only; API keys and App Check debug tokens are written to disk only when you tick **remember API keys & debug tokens**.
 
 ## Contributing
 

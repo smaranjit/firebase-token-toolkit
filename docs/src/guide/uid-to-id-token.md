@@ -4,7 +4,9 @@ Gets a Firebase ID token for the selected user in one click. The app signs a
 custom token locally, exchanges it with Google through `signInWithCustomToken`,
 and shows the resulting ID token.
 
-**Needs:** a service account, the Web API key, and a selected user.
+**Needs:** a service account, an [app](../configuration.md#apps) with an API
+key, and a selected user. The exchange uses the selected app's key, so you can
+check that an Android or iOS app's restricted key works.
 
 ## Generating a token
 
