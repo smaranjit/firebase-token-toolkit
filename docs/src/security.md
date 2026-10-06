@@ -12,8 +12,10 @@ version for day-to-day use.
   is never copied into the settings file.
 - **OAuth access tokens** and every **token shown on screen** live in memory
   only.
-- The **API key, App ID and App Check debug token** are written to disk, in
-  plaintext, only when **remember API key & App ID** is ticked. See
+- **API keys and App Check debug tokens** are written to disk, in plaintext,
+  only when **remember API keys & debug tokens** is ticked. App IDs, package
+  names, SHA-1s and bundle IDs are always saved; they are public, since every
+  build of your app contains them. See
   [Settings and storage](reference/settings-storage.md).
 
 ## Habits worth keeping

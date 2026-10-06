@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Web, Android and iOS apps per profile.** A profile now holds a list of the
+  project's apps instead of a single API key and App ID, and an **App**
+  dropdown in the top bar picks the one the ID-token and App Check tabs use.
+  **Load apps** imports every app in the project, with its API key, package
+  name and SHA-1 or bundle ID, through the Firebase Management API; apps can
+  also be added by hand.
+- **API keys restricted to an Android or iOS app now work.** Requests made with
+  such an app's key send `X-Android-Package` and `X-Android-Cert`, or
+  `X-Ios-Bundle-Identifier`, the way the Firebase SDKs do. Previously only the
+  key itself was sent, so Google rejected any key with an app restriction.
+
 - **A user guide**, published at
   <https://smaranjit.github.io/firebase-token-toolkit/>. It walks through
   setting up a Firebase project, every tab, profiles and the Users panel, and
@@ -16,8 +27,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   screenshots come from a real demo project, and the README now opens with a
   short recording of the main flow.
 
+### Changed
+
+- The persistence checkbox is now **remember API keys & debug tokens**, and it
+  no longer covers App IDs. App names, App IDs, package names, SHA-1s and
+  bundle IDs are always saved: they are public, and an app list that forgot
+  them on every restart would be of little use. API keys and App Check debug
+  tokens remain opt-in.
+- Existing settings migrate on first launch: each profile's API key, App ID and
+  debug token become its first app, with the type taken from the App ID.
+
 ### Fixed
 
+- **Clear all claims failed** with `INVALID_CLAIMS : Not a JSON Object: null`.
+  It sent an empty `customAttributes` string, which the Identity Toolkit API now
+  rejects; it now sends `{}`, as the Admin SDKs do.
+- The last rows of a long **Decoded JWT claims** table could fall below the
+  window with no way to scroll to them. Each tab now scrolls as a whole.
+- A refused **Save** on the User Custom Claims tab (for example, over the
+  1,000-byte limit) no longer shows the previous save's "Saved." message next to
+  the error.
 - `README.md` and `SECURITY.md` called the persistence checkbox "Remember
   secrets"; its label is **remember API key & App ID**. They also left out that
   the App Check debug token is gated by the same checkbox, and `SECURITY.md`

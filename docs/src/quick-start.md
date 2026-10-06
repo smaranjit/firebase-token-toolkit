@@ -1,9 +1,9 @@
 # Quick start
 
 This walk-through goes from a fresh install to an ID token for one of your
-users. You need a service-account key file and the project's Web API key; see
-[Preparing your Firebase project](firebase-setup.md) if you do not have them
-yet.
+users. You need a service-account key file; see
+[Preparing your Firebase project](firebase-setup.md) if you do not have one
+yet. The app reads everything else from the project.
 
 ## 1. Open the app
 
@@ -24,14 +24,17 @@ message confirms it; click **dismiss** to hide it.
 
 ![The service account loaded and Project ID filled in](images/service-account-loaded.png)
 
-## 3. Enter the Web API key
+## 3. Load the project's apps
 
-Paste the Web API key into **API key**. The field is masked. The indicator
-turns green and reads **ready**.
+Click **Load apps**. The app lists the project's web, Android and iOS apps and
+fills in each one's App ID and API key. Pick the app you want to test as from
+the **App** dropdown; the indicator turns green and reads **ready**.
 
-If you plan to use the App Check tab, paste the web app's **App ID** too.
+![The App dropdown listing the project's web, Android and iOS apps](images/apps-dropdown.png)
 
-![The top bar fully configured, with the indicator reading ready](images/top-bar-ready.png)
+If the service account is not allowed to read apps, enter an app by hand
+instead: **+ Add app**, choose its type, and paste its **API key** and
+**App ID**. See [The top bar](configuration.md#apps).
 
 ## 4. Load your users
 
@@ -62,9 +65,9 @@ curl -H "Authorization: Bearer <paste token here>" https://localhost:8080/api/me
 
 ## 6. Keep the setup for next time
 
-The service-account path and Project ID are saved automatically. The API key
-and App ID are saved only if you tick **remember API key & App ID**; without
-it, you paste them again on each launch. See
+The service-account path, Project ID and app list are saved automatically.
+API keys are saved only if you tick **remember API keys & debug tokens**;
+without it, click **Load apps** again after each launch, or paste the key. See
 [Settings and storage](reference/settings-storage.md) for what that writes to
 disk.
 
