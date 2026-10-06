@@ -52,7 +52,10 @@ IF NOTHING OPENS
 
 MORE
 
-  Full documentation, changelog, security notes and issue tracker:
+  User guide, with screenshots of every tab and a troubleshooting section:
+  https://smaranjit.github.io/firebase-token-toolkit/
+
+  Source, changelog, security notes and issue tracker:
   https://github.com/smaranjit/firebase-token-toolkit
 
   The About dialog, reached from the footer, links the changelog and

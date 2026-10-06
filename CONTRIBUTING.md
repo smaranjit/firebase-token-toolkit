@@ -80,6 +80,25 @@ resource compiler, and if `cargo-xwin` can't supply one the build still succeeds
 prints a warning and produces an iconless binary. Official releases come from the
 native Windows CI runner, so they always have the icon.
 
+## Documentation
+
+The user guide lives in `docs/` as an [mdBook](https://rust-lang.github.io/mdBook/)
+and is published to GitHub Pages by `docs.yml` on every push to `main` that
+touches it. Pull requests that change `docs/` get a build check. To preview:
+
+```bash
+mdbook serve docs --open
+```
+
+Use the mdBook version pinned in `.github/workflows/docs.yml`; newer minor
+releases have broken older books before.
+
+When a change alters what the UI shows (a label, a message, a new control),
+update the page that quotes it. The guide quotes labels exactly, so
+`grep -rn 'Old label' docs/src` finds what needs changing. Screenshots live in
+`docs/src/images/` and are taken at 1280×800 against a throwaway demo
+Firebase project; never take them against a project with real users.
+
 ## Changing the icon
 
 `assets/icon.svg` is the source. The PNG/ICO/ICNS set is generated and committed so
