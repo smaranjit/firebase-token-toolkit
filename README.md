@@ -4,6 +4,11 @@ A native desktop GUI for the Firebase auth tokens you need during development an
 
 [![CI](https://github.com/smaranjit/firebase-token-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/smaranjit/firebase-token-toolkit/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Docs](https://img.shields.io/badge/docs-user%20guide-blue.svg)](https://smaranjit.github.io/firebase-token-toolkit/)
+
+![Loading users, picking one, and generating an ID token](docs/src/images/quick-start.gif)
+
+**[Read the user guide →](https://smaranjit.github.io/firebase-token-toolkit/)** It covers setup, every tab, profiles, and troubleshooting.
 
 ## Install
 
@@ -37,14 +42,14 @@ xattr -dr com.apple.quarantine "/Applications/Firebase Token Toolkit.app"
 ## Features
 
 - **Multiple profiles** — switch between Firebase projects (dev/staging/prod, multiple clients, …) from a dropdown in the top bar. Each profile remembers its own service-account path, project ID, API key, App ID, and debug token. Switching a profile reloads the service account and clears the user list, OAuth cache, selected UID, and all tab outputs.
-- **UID → Custom Token** — sign a Firebase custom token (RS256) using a service account, with optional custom claims.
-- **UID → ID Token** — one-shot: sign a custom token, then exchange it via `signInWithCustomToken`.
-- **Custom Token → ID Token** — paste a custom token and exchange it for an ID token.
+- **UID -> Custom Token** — sign a Firebase custom token (RS256) using a service account, with optional custom claims.
+- **UID -> ID Token** — one-shot: sign a custom token, then exchange it via `signInWithCustomToken`.
+- **Custom -> ID Token** — paste a custom token and exchange it for an ID token.
 - **User Custom Claims** — set persistent `customAttributes` on a user record via `accounts:update`. Loads the user's existing claims, edits them as JSON, validates the 1000-byte limit, and supports a "clear all" action. Future ID tokens automatically include the saved claims.
-- **App Check Debug Token** — exchange a registered debug token via `firebaseappcheck.googleapis.com`.
+- **App Check** — exchange a registered debug token via `firebaseappcheck.googleapis.com`.
 - **Dynamic UID picker** — a left-side panel lists every user via `accounts:batchGet` (paginated up to 5,000) and lets you search by email, phone, or UID. Direct lookups fall through to `accounts:lookup` for users not present in the loaded page.
 - Decoded JWT claims table for every token, with timestamp → ISO conversion and clipboard copy.
-- Persists project ID, service-account path, and last-used tab between launches. API keys and App IDs are persisted **only if you opt in** — see [Security](#security).
+- Persists project ID, service-account path, and last-used tab between launches. API keys, App IDs and App Check debug tokens are persisted **only if you opt in** — see [Security](#security).
 
 ## Configure
 
@@ -54,7 +59,7 @@ In the top bar:
 2. **API key** → Firebase Console → Project Settings → General → Web API Key. Only needed for the ID-token and App Check tabs.
 3. **App ID** → only needed for the App Check tab.
 
-The status indicator on the right turns green once the service account is loaded and an API key is set.
+The status indicator next to the service account turns green and reads **ready** once the service account is loaded and an API key is set. The [quick start](https://smaranjit.github.io/firebase-token-toolkit/quick-start.html) walks through it with screenshots.
 
 ## Build from source
 
@@ -84,7 +89,7 @@ To reproduce the packaged release artifacts, see [`scripts/`](https://github.com
 
 This tool handles Firebase **service-account private keys** and mints signed tokens with them. Please read [SECURITY.md](https://github.com/smaranjit/firebase-token-toolkit/blob/main/SECURITY.md) before using it against anything that matters — it covers what is written to disk, what stays in memory, and how to report a vulnerability.
 
-The short version: the service account is read from the path you pick and never copied; OAuth access tokens live in memory only; API keys and App IDs are written to disk only when you tick **Remember secrets**.
+The short version: the service account is read from the path you pick and never copied; OAuth access tokens live in memory only; API keys, App IDs and App Check debug tokens are written to disk only when you tick **remember API key & App ID**.
 
 ## Contributing
 

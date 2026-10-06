@@ -27,14 +27,15 @@ Persisted for every profile:
 - **Service-account path** — the filesystem path only. The key file's contents are read
   on demand and never copied into the config.
 - Project ID, and the last-used tab.
+- Window size and position.
 
-Persisted **only when "Remember secrets" is enabled**:
+Persisted **only when "remember API key & App ID" is enabled**:
 
 - Web API key, App ID, and App Check debug token.
 
 These are stored in **plaintext**. There is no OS keychain integration — the file is
 protected by nothing but its filesystem permissions. If you would not paste the value
-into a plaintext file, leave "Remember secrets" off. Turning it off clears those fields
+into a plaintext file, leave "remember API key & App ID" off. Turning it off clears those fields
 for *all* profiles on the next save (`clear_secrets_all` in `src/config.rs`).
 
 **Never persisted:** the service-account private key, OAuth access tokens, and any
@@ -62,9 +63,9 @@ All requests go to Google endpoints over TLS (`rustls` — no OpenSSL):
 There is **no telemetry, analytics, or update check**. The application makes no
 network request you did not initiate.
 
-The one thing that leaves the app besides the calls above is the **GitHub** link
-in the footer, which hands the repository URL to your system browser when you
-click it. Nothing is sent with it.
+The only other thing that leaves the app is a link you click in the **About**
+dialog (Source, Contributors, Report an issue, Changelog, Security notes), which
+hands that URL to your system browser. Nothing is sent with it.
 
 ## Things worth knowing
 

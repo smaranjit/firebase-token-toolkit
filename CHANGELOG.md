@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **A user guide**, published at
+  <https://smaranjit.github.io/firebase-token-toolkit/>. It walks through
+  setting up a Firebase project, every tab, profiles and the Users panel, and
+  lists the error messages the app can show with what each one means. The
+  screenshots come from a real demo project, and the README now opens with a
+  short recording of the main flow.
+
+### Fixed
+
+- `README.md` and `SECURITY.md` called the persistence checkbox "Remember
+  secrets"; its label is **remember API key & App ID**. They also left out that
+  the App Check debug token is gated by the same checkbox, and `SECURITY.md`
+  described a GitHub link in the footer that now lives in the About dialog.
+
 ## [0.1.6]
 
 ### Changed
