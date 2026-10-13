@@ -64,7 +64,7 @@ arboard = "3"
 # Used only to generate a throwaway RSA key inside the signing test, so no
 # private key needs to be committed to the repository.
 rsa = { version = "0.9", features = ["pem"] }
-rand = "0.8"
+rand = "0.9"
 # Parses saved-settings fixtures in the config migration tests. Already in the
 # tree through eframe's persistence feature; keep the version in step with it.
 ron = "0.11"
