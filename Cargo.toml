@@ -67,7 +67,7 @@ rsa = { version = "0.9", features = ["pem"] }
 rand = "0.8"
 # Parses saved-settings fixtures in the config migration tests. Already in the
 # tree through eframe's persistence feature; keep the version in step with it.
-ron = "0.11"
+ron = "0.12"
 
 [build-dependencies]
 winresource = "0.1"
