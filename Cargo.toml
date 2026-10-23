@@ -1,6 +1,6 @@
 [package]
 name = "firebase-token-toolkit"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 # Set by the resolved dependency tree, not chosen freely: egui/eframe 0.36
 # declare rust-version 1.95, which is the floor of the whole tree.

@@ -7,11 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2]
+
 ### Changed
 
 - Upgraded egui, eframe, egui_extras and egui-wgpu from 0.33 to 0.36. The app
   now draws through eframe's `App::ui` and egui's unified `Panel` API, which
-  replace the removed `App::update`, `TopBottomPanel` and `SidePanel`.
+  replace the removed `App::update`, `TopBottomPanel` and `SidePanel`. Text is
+  rendered with font hinting, so it looks slightly sharper.
   Saved profiles and settings carry over unchanged, but the Users panel opens
   at its default width once after upgrading, because egui 0.36 stores panel
   sizes in a new format.
@@ -250,7 +253,8 @@ There is deliberately no automatic migration for this: it is a one-time move aff
 a handful of pre-release users, and a path-sniffing fallback would be permanent
 complexity in exchange for saving a single command.
 
-[Unreleased]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.6...v0.2.0
 [0.1.6]: https://github.com/smaranjit/firebase-token-toolkit/compare/v0.1.5...v0.1.6
