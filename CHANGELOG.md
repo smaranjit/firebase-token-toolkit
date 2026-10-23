@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Upgraded egui, eframe, egui_extras and egui-wgpu from 0.33 to 0.36. The app
+  now draws through eframe's `App::ui` and egui's unified `Panel` API, which
+  replace the removed `App::update`, `TopBottomPanel` and `SidePanel`.
+  Saved profiles and settings carry over unchanged, but the Users panel opens
+  at its default width once after upgrading, because egui 0.36 stores panel
+  sizes in a new format.
+- The minimum supported Rust version rises from 1.90 to 1.95, required by
+  egui 0.36.
+- The signing tests take their RNG from `rsa` itself, so the `rand`
+  dev-dependency is gone. rand 0.9 cannot feed rsa 0.9, which is still on
+  rand_core 0.6.
+
 ## [0.2.1]
 
 ### Added

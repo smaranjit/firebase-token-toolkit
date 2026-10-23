@@ -239,7 +239,7 @@ fn load_sa_silent(path: &str) -> Option<Arc<ServiceAccount>> {
 }
 
 impl eframe::App for FirebaseToolApp {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         if let Some(idx) = self.shared.requested_profile_switch.take() {
             self.switch_profile(idx);
         }
@@ -247,11 +247,11 @@ impl eframe::App for FirebaseToolApp {
             self.switch_app(idx);
         }
 
-        egui::TopBottomPanel::top("settings").show(ctx, |ui| {
+        egui::Panel::top("settings").show(ui, |ui| {
             settings_panel::render(ui, &mut self.shared, &self.rt);
         });
 
-        egui::TopBottomPanel::top("tabs").show(ctx, |ui| {
+        egui::Panel::top("tabs").show(ui, |ui| {
             ui.horizontal(|ui| {
                 for &t in &[
                     Tab::UidToCustom,
@@ -268,7 +268,7 @@ impl eframe::App for FirebaseToolApp {
         });
 
         if let Some((kind, msg)) = &self.shared.status_message.clone() {
-            egui::TopBottomPanel::top("status").show(ctx, |ui| {
+            egui::Panel::top("status").show(ui, |ui| {
                 let color = match kind {
                     StatusKind::Info => egui::Color32::LIGHT_GREEN,
                     StatusKind::Error => egui::Color32::LIGHT_RED,
@@ -284,28 +284,28 @@ impl eframe::App for FirebaseToolApp {
 
         // Added before the side panel so the footer spans the full window width,
         // and before the central panel, which claims whatever space is left.
-        egui::TopBottomPanel::bottom("about").show(ctx, |ui| {
+        egui::Panel::bottom("about").show(ui, |ui| {
             about::footer(ui, &mut self.show_about);
         });
 
         // Window::open() needs its own &mut bool, which would conflict with the
         // borrow of `self` inside the closure, so it round-trips via a local.
         let mut show_about = self.show_about;
-        about::window(ctx, &mut show_about);
+        about::window(ui.ctx(), &mut show_about);
         self.show_about = show_about;
 
         if self.tab.needs_uid_picker() {
-            egui::SidePanel::left("uid_picker")
+            egui::Panel::left("uid_picker")
                 .resizable(true)
-                .default_width(320.0)
-                .show(ctx, |ui| {
+                .default_size(320.0)
+                .show(ui, |ui| {
                     uid_picker::render(ui, &mut self.shared, &mut self.picker, &self.rt);
                 });
         }
 
         // The tab scrolls as a whole, so a long result (token, refresh token and
         // a full claims table) stays reachable however tall the top bar is.
-        egui::CentralPanel::default().show(ctx, |ui| {
+        egui::CentralPanel::default().show(ui, |ui| {
             egui::ScrollArea::vertical()
                 .auto_shrink([false, false])
                 .show(ui, |ui| match self.tab {
@@ -333,7 +333,7 @@ impl eframe::App for FirebaseToolApp {
                 });
         });
 
-        self.ensure_repaint(ctx);
+        self.ensure_repaint(ui.ctx());
     }
 
     fn save(&mut self, storage: &mut dyn eframe::Storage) {

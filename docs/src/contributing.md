@@ -2,7 +2,7 @@
 
 ## Build from source
 
-You need Rust 1.90 or newer.
+You need Rust 1.95 or newer.
 
 ```bash
 git clone https://github.com/smaranjit/firebase-token-toolkit

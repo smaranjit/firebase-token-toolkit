@@ -62,7 +62,7 @@ mod tests {
     /// lives in the repository, throwaway or not.
     #[test]
     fn sign_rs256_round_trips() {
-        let mut rng = rand::thread_rng();
+        let mut rng = rsa::rand_core::OsRng;
         let key = RsaPrivateKey::new(&mut rng, 2048).expect("generate test key");
         let private_pem = key
             .to_pkcs8_pem(LineEnding::LF)
@@ -99,7 +99,7 @@ mod tests {
 
     #[test]
     fn decode_payload_reads_the_claims_back() {
-        let mut rng = rand::thread_rng();
+        let mut rng = rsa::rand_core::OsRng;
         let key = RsaPrivateKey::new(&mut rng, 2048).expect("generate test key");
         let pem = key
             .to_pkcs8_pem(LineEnding::LF)
