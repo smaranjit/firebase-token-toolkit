@@ -62,7 +62,8 @@ xattr -dr com.apple.quarantine "/Applications/Firebase Token Toolkit.app"
 
 Download the new archive and replace the old binary. Your profiles and
 settings live outside the app (see [Settings and storage](reference/settings-storage.md)),
-so they carry over.
+so they carry over. The one exception is the width of the Users panel, which
+goes back to its default once when you update to 0.2.2 from an earlier version.
 
 ## Building from source
 

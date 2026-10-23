@@ -19,6 +19,7 @@ The file is written when the app closes and periodically while it runs.
 | Project ID | Always | |
 | Active profile, last-used tab | Always | |
 | Window size and position | Always | |
+| Users panel width | Always | Resets to the default once when updating to 0.2.2 from an earlier version |
 | Each app's name, type and App ID | Always | |
 | Android package and SHA-1, iOS bundle ID | Always | Public identifiers, included in every app build |
 | Selected app | Always | |
