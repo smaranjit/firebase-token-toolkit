@@ -2,12 +2,10 @@
 name = "firebase-token-toolkit"
 version = "0.2.1"
 edition = "2021"
-# Determined empirically from the resolved dependency tree, not from any single
-# crate's declared minimum. eframe 0.33 itself claims 1.88, but ordered-float
-# (pulled in transitively) requires 1.90, and the tree's floor is what actually
-# governs.
+# Set by the resolved dependency tree, not chosen freely: egui/eframe 0.36
+# declare rust-version 1.95, which is the floor of the whole tree.
 # CI enforces this exact version; see the msrv job in .github/workflows/ci.yml.
-rust-version = "1.90"
+rust-version = "1.95"
 authors = ["Smaranjit Maiti"]
 description = "A native desktop GUI for minting and exchanging Firebase auth tokens — custom tokens, ID tokens, custom claims, and App Check debug tokens."
 license = "MIT"
@@ -28,9 +26,9 @@ exclude = ["/dist", "/.github"]
 # x11 and wayland are listed explicitly because default-features = false no
 # longer pulls the winit platform backends in; without them the build fails with
 # "The platform you're compiling for is not supported by winit".
-eframe = { version = "0.33", default-features = false, features = ["default_fonts", "glow", "wgpu", "persistence", "x11", "wayland"] }
-egui = "0.33"
-egui_extras = { version = "0.33", features = ["all_loaders"] }
+eframe = { version = "0.36", default-features = false, features = ["default_fonts", "glow", "wgpu", "persistence", "x11", "wayland"] }
+egui = "0.36"
+egui_extras = { version = "0.36", features = ["all_loaders"] }
 # Declared directly, and only, to switch its default features back on. eframe
 # depends on egui-wgpu with default-features = false and re-enables them through
 # its own `default` feature — which our `default-features = false` strips. The
@@ -38,7 +36,7 @@ egui_extras = { version = "0.33", features = ["all_loaders"] }
 # so without this wgpu panics at startup with "No wgpu backend feature that is
 # implemented for the target platform was enabled". Keep the version in lockstep
 # with eframe.
-egui-wgpu = "0.33"
+egui-wgpu = "0.36"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 serde = { version = "1", features = ["derive"] }
@@ -64,10 +62,9 @@ arboard = "3"
 # Used only to generate a throwaway RSA key inside the signing test, so no
 # private key needs to be committed to the repository.
 rsa = { version = "0.9", features = ["pem"] }
-rand = "0.8"
 # Parses saved-settings fixtures in the config migration tests. Already in the
 # tree through eframe's persistence feature; keep the version in step with it.
-ron = "0.11"
+ron = "0.12"
 
 [build-dependencies]
 winresource = "0.1"
